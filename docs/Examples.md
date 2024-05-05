@@ -77,7 +77,7 @@
    ![e07](./img/e07.png)
 
    ```bash
-iseq -i CRR311377 -a
+   iseq -i CRR311377 -a
    ```
    
    When accessing the GSA database using Aspera, it will still prioritize access to the HUAWEI Cloud. If it is not available, it will proceed with the normal download using Aspera
