@@ -4,30 +4,22 @@
 
 **iSeq** is a Bash script that allows you to download sequencing data and metadata from **[GSA](https://ngdc.cncb.ac.cn/gsa/)**, **[SRA](https://www.ncbi.nlm.nih.gov/sra/)**, **[ENA](https://www.ebi.ac.uk/ena/)**, and **[DDBJ](https://www.ddbj.nig.ac.jp/)** databases.  
 
-![iSeq-pipeline](./docs/img/pipeline.png)
+![iSeq-pipeline](https://github.com/BioOmics/iSeq/blob/main/docs/img/pipeline.png)
 
 ## Features
 
-- [x] **Multiple Database Support**: Supports downloading data from multiple bioinformatics databases (such as GSA/SRA/ENA/DDBJ/GEO).
-
-- [x] **Multiple Input Formats**: Users can provide different types of accession numbers (such as Project, Study, Sample, Experiment, or Run accession numbers) to download related data.
-
-- [x] **Metadata Download**: Provides an option to download only metadata and skip the sequencing data download.
-
-- [x] **File Format Selection**: Users can choose to directly download gzip-formatted FASTQ files or download SRA files and convert them to FASTQ format.
-
-- [x] **Multi-threading Support**: Supports the use of multi-threading to accelerate the conversion of SRA to FASTQ files or the compression of FASTQ files.
-
-- [x] **File Merging**: For experiment-level accession numbers, the script can merge multiple fastq files into one.
-
-- [x] **Parallel Download**: Supports parallel download connections, allowing the specification of the number of connections to speed up download speeds.
-
-- [x] **Support for Aspera High-speed Download**: For GSA/ENA databases, the script supports high-speed data transfer using Aspera.
-
-- [x] **Automatic Retry Mechanism**: If a download or verification fails, the script will automatically retry until a set number of attempts have been reached.
-- [x] **Automated File Verification**: After the download is complete, the script will automatically verify the integrity of the files, including checking file sizes and MD5 checksums.
-
-- [x] **Error Handling**: The script provides error messages and suggestions for solutions when encountering errors.
+> [!TIP]
+> -  **Multiple Database Support**: Supports downloading data from multiple bioinformatics databases (such as GSA/SRA/ENA/DDBJ/GEO).
+> -  **Multiple Input Formats**: Users can provide different types of accession numbers (such as Project, Study, Sample, Experiment, or Run accession numbers) to download related data.
+> -  **Metadata Download**: Provides an option to download only metadata and skip the sequencing data download.
+> -  **File Format Selection**: Users can choose to directly download gzip-formatted FASTQ files or download SRA files and convert them to FASTQ format.
+> -  **Multi-threading Support**: Supports the use of multi-threading to accelerate the conversion of SRA to FASTQ files or the compression of FASTQ files.
+> -  **File Merging**: For experiment-level accession numbers, the script can merge multiple fastq files into one.
+> - **Parallel Download**: Supports parallel download connections, allowing the specification of the number of connections to speed up download speeds.
+> -  **Support for Aspera High-speed Download**: For GSA/ENA databases, the script supports high-speed data transfer using Aspera.
+> - **Automatic Retry Mechanism**: If a download or verification fails, the script will automatically retry until a set number of attempts have been reached.
+> -  **Automated File Verification**: After the download is complete, the script will automatically verify the integrity of the files, including checking file sizes and MD5 checksums.
+> -  **Error Handling**: The script provides error messages and suggestions for solutions when encountering errors.
 
 ## Installation
 
@@ -42,7 +34,7 @@ conda activate iseq
 iseq --version
 ```
 
-## Usage  [中文教程](https://github.com/BioOmics/iSeq/blob/main/ChineseTutorial.md)💖
+## Usage  [中文教程](https://github.com/BioOmics/iSeq/blob/main/docs/ChineseTutorial.md)💖
 
 ```{bash}
 $ iseq --help
@@ -238,7 +230,7 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 | success.log    | Save the GSA file name that has been downloaded successfully |
 | fail.log       | Save the GSA file name that has been downloaded failed       |
 
-## Example  [More]()
+## Example  [More](https://github.com/BioOmics/iSeq/blob/main/docs/Examples.md)
 
 1. Download all Run sequencing data and metadata associated with an accession.
 
