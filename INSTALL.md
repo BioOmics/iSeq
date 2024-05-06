@@ -2,9 +2,9 @@
 
 ```bash
 version="1.0.0"
-wget "https://github.com/BioOmics/iSeq/archive/refs/tags/v${version}.tar.gz"
-tar -zvxf "v${version}.tar.gz"
-cd iSeq-${version}/bin/
+wget "https://github.com/BioOmics/iSeq/releases/download/v${version}/iSeq-v${version}.tar.gz"
+tar -zvxf "iSeq-v${version}.tar.gz"
+cd iSeq/bin/
 chmod +x iseq
 echo 'export PATH=$PATH:'$(pwd) >> ~/.bashrc
 source ~/.bashrc
