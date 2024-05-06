@@ -1,9 +1,10 @@
 ## Install the latest version of iSeq
 
 ```bash
-wget https://github.com/BioOmics/iSeq/releases/download/v1.0.0/iSeq.v1.0.0.tar.gz
-tar -zvxf iSeq-v1.0.0.tar.gz
-cd iSeq-v1.0.0/bin/
+version="1.0.0"
+wget "https://github.com/BioOmics/iSeq/archive/refs/tags/v${version}.tar.gz"
+tar -zvxf "v${version}.tar.gz"
+cd iSeq-${version}/bin/
 chmod +x iseq
 echo 'export PATH=$PATH:'$(pwd) >> ~/.bashrc
 source ~/.bashrc
