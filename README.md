@@ -230,7 +230,7 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 | success.log    | Save the GSA file name that has been downloaded successfully |
 | fail.log       | Save the GSA file name that has been downloaded failed       |
 
-## Example  [More](https://github.com/BioOmics/iSeq/blob/main/docs/examples.md)
+## Example  [More](https://github.com/BioOmics/iSeq/blob/main/docs/Examples.md)
 
 1. Download all Run sequencing data and metadata associated with an accession.
 
