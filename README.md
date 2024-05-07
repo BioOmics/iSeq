@@ -1,3 +1,9 @@
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/version.svg)](https://anaconda.org/bioconda/iseq)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/downloads.svg)](https://anaconda.org/bioconda/iseq)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/latest_release_date.svg)](https://anaconda.org/bioconda/iseq)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/license.svg)](https://anaconda.org/bioconda/iseq)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/platforms.svg)](https://anaconda.org/bioconda/iseq)
+
 # [iSeq](https://github.com/BioOmics/iSeq): An [i](https://github.com/BioOmics/iSeq)ntegrated tool to fetch public [Seq](https://github.com/BioOmics/iSeq)uencing data
 
 ## Description
