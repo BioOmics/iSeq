@@ -16,8 +16,8 @@
 
 
 ## Features
--  **Multiple Database Support**: Supports downloading sequencing data from multiple bioinformatics databases (such as **GSA/SRA/ENA/DDBJ/GEO**).
--  **Multiple Input Formats**: Supports different types of accession (**Project, Study, Sample, Experiment, or Run accession**).
+-  **Multiple Database Support**: Supports downloading sequencing data from multiple bioinformatics databases (GSA/SRA/ENA/DDBJ/GEO).
+-  **Multiple Input Formats**: Supports different types of accession (Project, Study, Sample, Experiment, or Run accession).
 -  **Metadata Download**: Supports download sample metadata for each accession.
 <details>
 <summary>More features</summary>
