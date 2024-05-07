@@ -12,21 +12,19 @@
 ![iSeq-pipeline](https://github.com/BioOmics/iSeq/blob/main/docs/img/pipeline.png)
 
 > [!IMPORTANT]
-> In order to use iSeq, Your system must be **connected to the network** and **support FTP, HTTP, and HTTPS protocols**.
+> To use iSeq, Your system must be **connected to the network** and **support FTP, HTTP, and HTTPS protocols**.
 
 
 ## Features
--  **Multiple Database Support**: Supports downloading data from multiple bioinformatics databases (such as GSA/SRA/ENA/DDBJ/GEO).
--  **Multiple Input Formats**: Users can provide different types of accession numbers (such as Project, Study, Sample, Experiment, or Run accession numbers) to download related data.
--  **Metadata Download**: Provides an option to download only metadata and skip the sequencing data download.
+-  **Multiple Database Support**: Supports downloading sequencing data from multiple bioinformatics databases (such as **GSA/SRA/ENA/DDBJ/GEO**).
+-  **Multiple Input Formats**: Supports different types of accession (**Project, Study, Sample, Experiment, or Run accession**).
+-  **Metadata Download**: Supports download sample metadata for each accession.
 <details>
 <summary>More features</summary>
 	
 -  **File Format Selection**: Users can choose to directly download gzip-formatted FASTQ files or download SRA files and convert them to FASTQ format.
-	
 -  **Multi-threading Support**: Supports the use of multi-threading to accelerate the conversion of SRA to FASTQ files or the compression of FASTQ files.
-
--  **File Merging**: For experiment-level accession numbers, the script can merge multiple fastq files into one.
+-  **File Merging**: For experiment-level accession, the script can merge multiple FASTQ files into one.
 -  **Parallel Download**: Supports parallel download connections, allowing the specification of the number of connections to speed up download speeds.
 -  **Support for Aspera High-speed Download**: For GSA/ENA databases, the script supports high-speed data transfer using Aspera.
 -  **Automatic Retry Mechanism**: If a download or verification fails, the script will automatically retry until a set number of attempts have been reached.
@@ -122,7 +120,7 @@ iseq -i CRR343031 -m
 Therefore, regardless of whether the `-m` parameter is used or not, the sample information of the accession will be obtained. If metadata cannot be retrieved, the **iSeq** program will exit without proceeding to the subsequent download.
 
 > [!NOTE]
-> **Note 1**: If the retrieved accession is in the **SRA/ENA/DDBJ/GEO** databases, **iSeq** will first search in the ENA database. If sample information can be retrieved, it will download metadata in **`TSV` format** via the [ENA API](https://www.ebi.ac.uk/ena/portal/api/swagger-ui/index.html), typically containing 191 columns. However, some recently released data in the SRA database may not be promptly synchronized to the ENA database. Therefore, if metadata cannot be obtained from the ENA database, **iSeq** will directly download metadata in `CSV` format via the [SRA Database Backend](https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/), typically containing 30 columns. To maintain consistency with the TSV format, it will be converted to TSV format using `sed -i 's/,/\t/g'`. However, if a single field contains a comma, it may cause column disorder. Ultimately, you will obtain sample information named **`${accession}.metadata.tsv`**.
+> **Note 1**: If the retrieved accession is in the **SRA/ENA/DDBJ/GEO** databases, **iSeq** will first search in the ENA database. If sample information can be retrieved, it will download metadata in **`TSV` format** via the [ENA API](https://www.ebi.ac.uk/ena/portal/api/swagger-ui/index.html), typically containing 191 columns. However, some recently released data in the SRA database may not be promptly synchronized to the ENA database. Therefore, if metadata cannot be obtained from the ENA database, **iSeq** will directly download metadata in **`CSV` format** via the [SRA Database Backend](https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/), typically containing 30 columns. To maintain consistency with the TSV format, it will be converted to TSV format using `sed -i 's/,/\t/g'`. However, if a single field contains a comma, it may cause column disorder. Ultimately, you will obtain sample information named **`${accession}.metadata.tsv`**.
 
 > [!NOTE]
 > **Note 2**: If the retrieved accession is in the **GSA** database, **iSeq** will obtain sample information via GSA's [getRunInfo](https://ngdc.cncb.ac.cn/gsa/search/getRunInfo) interface, downloading metadata in **`CSV` format**, typically containing 25 columns. The metadata obtained above will be saved as `${accession}.metadata.csv`. To supplement more detailed metadata information, iSeq will automatically obtain metadata information for the Project to which the accession belongs via GSA's [exportExcelFile](https://ngdc.cncb.ac.cn/gsa/file/exportExcelFile) interface, downloading metadata in **`XLSX`** format, typically with 3 sheets: `Sample`, `Experiment`, `Run`. The final metadata information will be saved as `${accession}.metadata.xlsx`. In summary, you will ultimately obtain sample information named **`${accession}.metadata.csv`** and **`CRA*.metadata.xlsx`**.
@@ -172,7 +170,7 @@ Merge **multiple FASTQ** files from an Experiment into **one FASTQ** file.
 ```bash
 iseq -i SRX003906 -e -g
 ```
-Although in most cases, an Experiment contains only one Run, some sequencing data may have multiple Runs within an Experiment (e.g., [SRX003906](https://www.ebi.ac.uk/ena/browser/view/SRX003906), [CRX020217](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX020217)). Hence, you can use the `-e` parameter to merge multiple FASTQ files from an Experiment into one. Considering paired-end sequencing, where `fastq_1` and `fastq_2` files need to be merged simultaneously and the sequence names in corresponding lines need to remain consistent, **iSeq** will merge multiple FASTQ files in the **same order**. Ultimately, for **single-end sequencing** data, a single file **`SRX*.fastq.gz`** will be generated, and for **paired-end** sequencing data, two files **`SRX*_1.fastq.gz`** and **`SRX*_2.fastq.gz`** will be generated.
+Although in most cases, an Experiment contains only one Run, some sequencing data may have multiple Runs within an Experiment (e.g., [SRX003906](https://www.ebi.ac.uk/ena/browser/view/SRX003906), [CRX020217](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX020217)). Hence, you can use the `-e` parameter to merge multiple FASTQ files from an Experiment into one. Considering paired-end sequencing, where `fastq_1` and `fastq_2` files need to be merged simultaneously and the sequence names in corresponding lines need to remain consistent, **iSeq** will merge multiple FASTQ files in the **same order**. Ultimately, for **single-end** sequencing data, a single file **`SRX*.fastq.gz`** will be generated, and for **paired-end** sequencing data, two files **`SRX*_1.fastq.gz`** and **`SRX*_2.fastq.gz`** will be generated.
 
 > [!NOTE]
 > **Note 1**: If the accession is a **Run ID**, the `-e` parameter cannot be used. Currently, **iSeq** supports merging **both gzip-compressed and uncompressed FASTQ** files, but does not support merging files such as **BAM files and tar.gz** files.
