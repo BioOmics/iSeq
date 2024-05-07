@@ -31,7 +31,7 @@
 
 ### 1. **iSeq** can be installed by conda easily
 ```{bash}
-conda create -n iseq -c conda-forge -c bioconda iseq # May take 5-10 minutes
+conda create -n iseq -c conda-forge -c bioconda iseq
 conda activate iseq
 ```
 ### 2. The latest version of iSeq (v1.0) can also be installed from source, see [INSTALL](https://github.com/BioOmics/iSeq/blob/main/INSTALL.md)
@@ -215,7 +215,7 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 > [!NOTE]
 > **Note 2**: Since Aspera requires a key file, **iSeq** will **automatically search for the key** file in the `conda` environment or the `~/.aspera` directory. If the key file is not found, downloading will not be possible.
 
-## Output
+## Output [Detail](https://github.com/BioOmics/iSeq/blob/main/docs/OutputDetail.md)
 
 - If the query accession in **SRA/ENA/DDBJ/GEO** database, the following files will be generated:
 
