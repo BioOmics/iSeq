@@ -215,7 +215,7 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 > [!NOTE]
 > **Note 2**: Since Aspera requires a key file, **iSeq** will **automatically search for the key** file in the `conda` environment or the `~/.aspera` directory. If the key file is not found, downloading will not be possible.
 
-## Output [Detail](https://github.com/BioOmics/iSeq/blob/main/docs/OutputDetail.md)
+## Output    [See detail](https://github.com/BioOmics/iSeq/blob/main/docs/OutputDetail.md)
 
 - If the query accession in **SRA/ENA/DDBJ/GEO** database, the following files will be generated:
 
@@ -236,7 +236,7 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 | success.log    | Save the GSA file name that has been downloaded successfully |
 | fail.log       | Save the GSA file name that has been downloaded failed       |
 
-## Example  [More](https://github.com/BioOmics/iSeq/blob/main/docs/Examples.md)
+## Example    [See more](https://github.com/BioOmics/iSeq/blob/main/docs/Examples.md)
 
 1. Download all Run sequencing data and metadata associated with an accession.
 
