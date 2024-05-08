@@ -100,7 +100,7 @@ iseq -i SRR1178105 -q
 > **注意1**：`-q`在下载单细胞数据,尤其对于scATAC-Seq数据，可以很好的分解出`I1`, `R1`, `R2`, `R3`四个文件。而如果通过`-g`参数直接下载FASTQ文件，只会得到`R1`, `R3`两个文件（如：[SRR13450125](https://www.ebi.ac.uk/ena/browser/view/SRR13450125)），这可能会导致后续数据分析时出现问题。
 
 > [!NOTE]
-> **`注意2`**：`-q`和`-g`同时使用的时候，会先下载SRA文件，然后通过`fasterq-dump`工具转换为`FASTQ`文件，最后通过`pigz`压缩为gzip格式。并不是直接下载gzip格式的FASTQ文件，这对获取全面的单细胞数据非常有用
+> **`注意2`**：`-q`和`-g`同时使用的时候，会先下载SRA文件，然后通过`fasterq-dump`工具转换为`FASTQ`文件，最后通过`pigz`压缩为gzip格式。并不是直接下载gzip格式的FASTQ文件，这对获取全面的单细胞数据非常有用。
 
 ### 5. `-t`, `--threads`
 
@@ -126,7 +126,7 @@ iseq -i SRX003906 -e -g
 > **注意1**：如果accession是Run ID，则不能使用`-e`参数。目前，iSeq支持合并gzip压缩和未压缩的FASTQ文件，对于bam文件和tar.gz文件等暂不支持合并。
 
 > [!NOTE]
-> **注意2**：正常情况下，一个Experiment仅包含一个Run时，相同的Run应该有相同的前缀。如`SRR52991314_1.fq.gz`和`SRR52991314_2.fq.gz`都有相同的前缀名`SRR52991314`，此时，iSeq会直接重命名为`SRX*_1.fastq.gz`和`SRX*_2.fastq.gz`。但是有例外的情况，如[CRX006713](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX006713)中包含有一个Run为`CRR007192`，但是该Run包含多个前缀名不同的文件，此时，iSeq会直接重命名为`SRX*_原本的文件名`，如这里将直接重命名为：`CRX006713_CRD015671.gz`和`CRX006713_CRD015671.gz`。
+> **注意2**：正常情况下，一个Experiment仅包含一个Run时，相同的Run应该有相同的前缀。如`SRR52991314_1.fq.gz`和`SRR52991314_2.fq.gz`都有相同的前缀名`SRR52991314`，此时，iSeq会直接重命名为`SRX*_1.fastq.gz`和`SRX*_2.fastq.gz`。但是有例外的情况，如[CRX006713](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX006713)中包含有一个Run为`CRR007192`，但是该Run包含多个前缀名不同的文件，此时，iSeq会直接重命名为`SRX*_原本的文件名`，如这里将直接重命名为：`CRX006713_CRD015671.gz`和`CRX006713_CRD015672.gz`。
 
 ### 7. `-d`, `--database`
 
