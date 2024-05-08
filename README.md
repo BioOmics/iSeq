@@ -149,8 +149,10 @@ This parameter is only effective when the accession is from the **SRA/ENA/DDBJ/G
 > **Note1**: `-q` is particularly useful for downloading **single-cell data**, especially for scATAC-Seq data, as it can effectively decompose the files into four parts: `I1`, `R1`, `R2`, `R3`. However, if FASTQ files are directly downloaded via the `-g` parameter, only `R1` and `R3` files will be obtained (e.g., [SRR13450125](https://www.ebi.ac.uk/ena/browser/view/SRR13450125)), which may cause issues during subsequent data analysis.
 
 > [!NOTE]
->
 > **Note 2**: When `-q` and `-g` are used together, the SRA file will first be downloaded, then converted to `FASTQ` files using the `fasterq-dump` tool, and finally compressed into gzip format using `pigz`. It does not directly download `FASTQ` files in gzip format, which is very useful for obtaining comprehensive single-cell data.
+
+> [!TIP]
+> [parallel-fastq-dump](https://github.com/rvalieris/parallel-fastq-dump) can also convert SRA to gzip-compressed FASTQ files, typically 2-3 times faster than `fasterq-dump + pigz`. However, iSeq does not support parallel-fastq-dump currently.
 
 ### 5. `-t`, `--threads`
 
