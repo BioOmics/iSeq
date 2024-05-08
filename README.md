@@ -136,6 +136,9 @@ Since the majority of data formats stored directly in the **GSA** database are i
 
 If the accession is from the **SRA/ENA/DDBJ/GEO** databases, **iSeq** will first attempt to access the ENA database. If it can directly download FASTQ files in gzip format, it will do so; otherwise, it will download SRA files and convert them to FASTQ format using the `fasterq-dump` tool, then compress the FASTQ files using the `pigz` tool, ultimately obtaining FASTQ files in gzip format.
 
+> [!TIP]
+> [parallel-fastq-dump](https://github.com/rvalieris/parallel-fastq-dump) can also convert SRA to gzip-compressed FASTQ files, typically **2-3 times** faster than `fasterq-dump + pigz`. However, considering **IO limitations**, `iSeq` currently does not support `parallel-fastq-dump`.
+
 ### 4. `-q`, `--fastq`
 
 After downloading the SRA files, they will be decomposed into multiple **uncompressed FASTQ** files.
@@ -150,9 +153,6 @@ This parameter is only effective when the accession is from the **SRA/ENA/DDBJ/G
 
 > [!NOTE]
 > **Note 2**: When `-q` and `-g` are used together, the SRA file will first be downloaded, then converted to `FASTQ` files using the `fasterq-dump` tool, and finally compressed into gzip format using `pigz`. It does not directly download `FASTQ` files in gzip format, which is very useful for obtaining comprehensive single-cell data.
-
-> [!TIP]
-> [parallel-fastq-dump](https://github.com/rvalieris/parallel-fastq-dump) can also convert SRA to gzip-compressed FASTQ files, typically **2-3 times** faster than `fasterq-dump + pigz`. However, considering **IO limitations**, `iSeq` currently does not support `parallel-fastq-dump`.
 
 ### 5. `-t`, `--threads`
 
