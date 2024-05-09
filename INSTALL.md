@@ -31,6 +31,9 @@ srapath --version | awk 'NR==2{print $3}'
 iseq --version
 ```
 
+> [!IMPORTANT]
+> Using **Ubuntu on Windows**, installing `Wget` through `conda` may lead to "unable to resolve host address", which in turn may prevent `iSeq` from fetching data. This issue is currently being resolved.
+
 ## Here is a tutorial on how to install dependencies from source 
 
 ### 1. pigz
