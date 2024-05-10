@@ -32,7 +32,9 @@ iseq --version
 ```
 
 > [!IMPORTANT]
-> Using **Ubuntu on Windows**, installing `Wget` through `conda` may lead to "unable to resolve host address", which in turn may prevent `iSeq` from fetching data. This issue is currently being resolved.
+> Using **Ubuntu on Windows**, installing `Wget` through `conda` may lead to "unable to resolve host address", which in turn may prevent `iSeq` from fetching data. You can don't install `wget` by `conda`. Or, this issue also can be resolved by following command:
+> ```bash
+> ln -sf /usr/bin/wget $(which wget)
 
 ## Here is a tutorial on how to install dependencies from source 
 
