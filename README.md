@@ -177,7 +177,7 @@ Although in most cases, an Experiment contains only one Run, some sequencing dat
 > **Note 1**: If the accession is a **Run ID**, the `-e` parameter cannot be used. Currently, **iSeq** supports merging **both gzip-compressed and uncompressed FASTQ** files, but does not support merging files such as **BAM files and tar.gz** files.
 
 > [!NOTE]
-> **Note 2**: Normally, when an Experiment contains only one Run, identical Runs should have the **same prefix**. For example, `SRR52991314_1.fq.gz` and `SRR52991314_2.fq.gz` have the same prefix `SRR52991314`. In this case, **iSeq** will directly **rename** them to **`SRX*_1.fastq.gz`** and **`SRX*_2.fastq.gz`**. However, there are exceptions, such as in [CRX006713](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX006713) where a Run `CRR007192` contains files with different prefixes. In such cases, **iSeq** will **rename** them as **`SRX*_original_filename`**, for example, they will be renamed as `CRX006713_CRD015671.gz` and `CRX006713_CRD015671.gz`.
+> **Note 2**: Normally, when an Experiment contains only one Run, identical Runs should have the **same prefix**. For example, `SRR52991314_1.fq.gz` and `SRR52991314_2.fq.gz` have the same prefix `SRR52991314`. In this case, **iSeq** will directly **rename** them to **`SRX*_1.fastq.gz`** and **`SRX*_2.fastq.gz`**. However, there are exceptions, such as in [CRX006713](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX006713) where a Run `CRR007192` contains files with different prefixes. In such cases, **iSeq** will **rename** them as **`SRX*_original_filename`**, for example, they will be renamed as `CRX006713_CRD015671.gz` and `CRX006713_CRD015672.gz`.
 
 ### 7. `-d`, `--database`
 
