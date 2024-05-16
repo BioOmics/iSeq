@@ -8,3 +8,4 @@ iSeq demonstrated high stability, successfully downloading and passing integrity
 - Gzip-formatted FASTQ Files Download: Directly fetching gzip-formatted FASTQ files proved to be the fastest method, with the option to use "--fastq" and "--gzip" parameters for specific data types. Increasing threads notably improved compression speed.
 
 ## Overview
+![benchmark_result](https://github.com/BioOmics/iSeq/blob/main/docs/img/benchmark.png)
