@@ -34,7 +34,12 @@ iseq --version
 > [!IMPORTANT]
 > Using **Ubuntu on Windows**, installing `Wget` through `conda` may lead to "unable to resolve host address", which in turn may prevent `iSeq` from fetching data. You can don't install `wget` by `conda`. Or, this issue also can be resolved by following command:
 > ```bash
+> conda activate iseq
+> # Map the system's built-in wget to the conda environment, ensuring that wget is properly installed.
 > ln -sf /usr/bin/wget $(which wget)
+> # Including the 'srapath'. you can install SRA Toolkit and then change the path below to your own.
+> ln -sf ~/YourPathway/sratoolkit/bin/srapath $(which srapath)
+
 
 ## Here is a tutorial on how to install dependencies from source 
 
