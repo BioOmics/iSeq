@@ -46,7 +46,7 @@ conda activate iseq
 iseq --version
 ```
 
-## Usage  [中文教程](https://github.com/BioOmics/iSeq/blob/main/docs/ChineseTutorial.md)💖
+## Usage  [中文教程](https://github.com/BioOmics/iSeq/blob/main/docs/ChineseTutorial.md)✨
 
 ```{bash}
 $ iseq --help
