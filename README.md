@@ -81,7 +81,8 @@ Input the accession you want to download.
 ```bash
 iseq -i PRJNA211801
 ```
-
+<details>
+<summary>👈Click here to see more info.</summary>
  Firstly, **iSeq** will retrieve the metadata of the accession, then proceed to download each Run contained within. 
 
 Currently **supports 6 accession formats** from the following **5 databases**, with supported accession prefixes as follows:
@@ -108,6 +109,7 @@ Here are some examples:
 | Run            | ERR, DRR, SRR, CRR             | ERR5260405, DRR421224, SRR7706354, CRR311377                |
 
 In summary, regardless of the data format of your accession among the six options, it will eventually download and **check the MD5 value** of each contained Run. If the MD5 value does not match that in the public database, it will attempt a maximum of **three rounds** of re-downloading. If successful after three attempts of downloading and verification, the file name will be stored in `success.log`; otherwise, if the download fails, the file name will be stored in `fail.log`.
+</details>
 
 ### 2. `-m`, `--metadata `
 
@@ -117,7 +119,8 @@ Download only the sample information of the accession and skip the download of s
 iseq -i PRJNA211801 -m
 iseq -i CRR343031 -m
 ```
-
+<details>
+<summary>👈Click here to see more info.</summary>
 Therefore, regardless of whether the `-m` parameter is used or not, the sample information of the accession will be obtained. If metadata cannot be retrieved, the **iSeq** program will exit without proceeding to the subsequent download.
 
 > [!NOTE]
@@ -125,6 +128,7 @@ Therefore, regardless of whether the `-m` parameter is used or not, the sample i
 
 > [!NOTE]
 > **Note 2**: If the retrieved accession is in the **GSA** database, **iSeq** will obtain sample information via GSA's [getRunInfo](https://ngdc.cncb.ac.cn/gsa/search/getRunInfo) interface, downloading metadata in **`CSV` format**, typically containing 25 columns. The metadata obtained above will be saved as `${accession}.metadata.csv`. To supplement more detailed metadata information, iSeq will automatically obtain metadata information for the Project to which the accession belongs via GSA's [exportExcelFile](https://ngdc.cncb.ac.cn/gsa/file/exportExcelFile) interface, downloading metadata in **`XLSX`** format, typically with 3 sheets: `Sample`, `Experiment`, `Run`. The final metadata information will be saved as `${accession}.metadata.xlsx`. In summary, you will ultimately obtain sample information named **`${accession}.metadata.csv`** and **`CRA*.metadata.xlsx`**.
+</details>
 
 ### 3. `-g`, `--gzip`
 
@@ -133,12 +137,15 @@ Directly download FASTQ files in **gzip format**. If direct download is not poss
 ```bash
 iseq -i SRR1178105 -g
 ```
+<details>
+<summary>👈Click here to see more info.</summary>
 Since the majority of data formats stored directly in the **GSA** database are in gzip format, if the accession being searched for is from the GSA database, whether the `-g` parameter is used or not, you can directly download FASTQ files in gzip format. 
 
 If the accession is from the **SRA/ENA/DDBJ/GEO** databases, **iSeq** will first attempt to access the ENA database. If it can directly download FASTQ files in gzip format, it will do so; otherwise, it will download SRA files and convert them to FASTQ format using the `fasterq-dump` tool, then compress the FASTQ files using the `pigz` tool, ultimately obtaining FASTQ files in gzip format.
 
 > [!TIP]
 > [parallel-fastq-dump](https://github.com/rvalieris/parallel-fastq-dump) can also convert SRA to gzip-compressed FASTQ files, typically **2-3 times** faster than `fasterq-dump + pigz`. However, considering **IO limitations**, `iSeq` currently does not support `parallel-fastq-dump`.
+</details>
 
 ### 4. `-q`, `--fastq`
 
@@ -147,6 +154,8 @@ After downloading the SRA files, they will be decomposed into multiple **uncompr
 ```bash
 iseq -i SRR1178105 -q
 ```
+<details>
+<summary>👈Click here to see more info.</summary>
 This parameter is only effective when the accession is from the **SRA/ENA/DDBJ/GEO** databases and the downloaded files are **SRA files**. After downloading the SRA files, **iSeq** will use the `fasterq-dump` tool to convert them into FASTQ files. Additionally, you can specify the number of threads for conversion using the `-t` parameter.
 
 > [!NOTE]
@@ -154,6 +163,7 @@ This parameter is only effective when the accession is from the **SRA/ENA/DDBJ/G
 
 > [!NOTE]
 > **Note 2**: When `-q` and `-g` are used together, the SRA file will first be downloaded, then converted to `FASTQ` files using the `fasterq-dump` tool, and finally compressed into gzip format using `pigz`. It does not directly download `FASTQ` files in gzip format, which is very useful for obtaining comprehensive single-cell data.
+</details>
 
 ### 5. `-t`, `--threads`
 
@@ -162,7 +172,10 @@ Specifies the number of threads to use for decompressing SRA files into FASTQ fi
 ```bash
 iseq -i SRR1178105 -q -t 10
 ```
+<details>
+<summary>👈Click here to see more info.</summary>
 Considering that sequencing data files are generally large, you can specify the number of threads for decomposition using the `-t` parameter. However, more threads does not necessarily mean better performance because excessive threads can lead to **high CPU or IO loads**, especially since `fasterq-dump` consumes a considerable amount of IO, potentially impacting the execution of other tasks.
+</details>
 
 ### 6. `-e`, `--merge`
 
@@ -171,6 +184,8 @@ Merge **multiple FASTQ** files from an Experiment into **one FASTQ** file.
 ```bash
 iseq -i SRX003906 -e -g
 ```
+<details>
+<summary>👈Click here to see more info.</summary>
 Although in most cases, an Experiment contains only one Run, some sequencing data may have multiple Runs within an Experiment (e.g., [SRX003906](https://www.ebi.ac.uk/ena/browser/view/SRX003906), [CRX020217](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX020217)). Hence, you can use the `-e` parameter to merge multiple FASTQ files from an Experiment into one. Considering paired-end sequencing, where `fastq_1` and `fastq_2` files need to be merged simultaneously and the sequence names in corresponding lines need to remain consistent, **iSeq** will merge multiple FASTQ files in the **same order**. Ultimately, for **single-end** sequencing data, a single file **`SRX*.fastq.gz`** will be generated, and for **paired-end** sequencing data, two files **`SRX*_1.fastq.gz`** and **`SRX*_2.fastq.gz`** will be generated.
 
 > [!NOTE]
@@ -178,6 +193,7 @@ Although in most cases, an Experiment contains only one Run, some sequencing dat
 
 > [!NOTE]
 > **Note 2**: Normally, when an Experiment contains only one Run, identical Runs should have the **same prefix**. For example, `SRR52991314_1.fq.gz` and `SRR52991314_2.fq.gz` have the same prefix `SRR52991314`. In this case, **iSeq** will directly **rename** them to **`SRX*_1.fastq.gz`** and **`SRX*_2.fastq.gz`**. However, there are exceptions, such as in [CRX006713](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX006713) where a Run `CRR007192` contains files with different prefixes. In such cases, **iSeq** will **rename** them as **`SRX*_original_filename`**, for example, they will be renamed as `CRX006713_CRD015671.gz` and `CRX006713_CRD015672.gz`.
+</details>
 
 ### 7. `-d`, `--database`
 
@@ -186,10 +202,13 @@ Specifies the database for downloading SRA files, supporting **ENA** and **SRA**
 ```bash
 iseq -i SRR1178105 -d sra 
 ```
+<details>
+<summary>👈Click here to see more info.</summary>
 By default, **iSeq** will automatically detect available databases, so specifying the `-d` parameter is **usually unnecessary**. However, some SRA files may download **slowly** from the ENA database. In such cases, you can force downloading from the SRA database by specifying `-d sra`.
 
 > [!NOTE]
 > **Note**: If the corresponding SRA file is not found in the **ENA** database, even if the `-d ena` parameter is specified, **iSeq** will still automatically switch to downloading from the **SRA** database.
+</details>
 
 ### 8. `-p`, `--parallel`
 
@@ -198,6 +217,8 @@ Enables **multi-threaded downloading** and requires specifying the number of thr
 ```bash
 iseq -i PRJNA211801 -p 10
 ```
+<details>
+<summary>👈Click here to see more info.</summary>
 Considering that `wget` may be slow in some cases, you can use the `-p` parameter to let **iSeq** utilize the `axel` tool for multi-threaded downloading.
 
 > [!NOTE]
@@ -205,6 +226,7 @@ Considering that `wget` may be slow in some cases, you can use the `-p` paramete
 
 > [!NOTE]
 > **Note 2**: As mentioned, **iSeq** will maintain 10 connections throughout the download process. Therefore, you will see multiple occurrences of the same `Connection * finished` popping up during the download process. This is because some connections are released immediately after completing the download and then new connections are established for downloading.
+</details>
 
 ### 9. `-a`, `--aspera`
 
@@ -213,6 +235,8 @@ Use Aspera for downloading.
 ```bash
 iseq -i PRJNA211801 -a -g
 ```
+<details>
+<summary>👈Click here to see more info.</summary>
 As Aspera offers faster download speeds, you can use the `-a` parameter to instruct **iSeq** to use the `ascp` tool for downloading. Unfortunately, Aspera downloading is currently **only supported by the GSA and ENA databases**. The **NCBI SRA** database cannot utilize Aspera for downloading as it predominantly employs Google Cloud and AWS Cloud technologies and other reasons, see [Avoid-using-ascp](https://github.com/ncbi/sra-tools/wiki/Avoid-using-ascp-directly-for-downloads).
 
 > [!NOTE]
@@ -220,6 +244,7 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 
 > [!NOTE]
 > **Note 2**: Since Aspera requires a key file, **iSeq** will **automatically search for the key** file in the `conda` environment or the `~/.aspera` directory. If the key file is not found, downloading will not be possible.
+</details>
 
 ## Output
 
