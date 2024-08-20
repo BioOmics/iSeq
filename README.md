@@ -45,6 +45,26 @@ conda activate iseq
 # Use the following command to check whether dependent software is installed
 iseq --version
 ```
+## Example    [See more](https://github.com/BioOmics/iSeq/blob/main/docs/Examples.md)
+
+1. Download all Run sequencing data and metadata associated with an accession.
+
+```
+iseq -i PRJNA211801
+```
+
+![e01](./docs/img/e01.png)
+
+2. Batch download by Aspera with `-a` to directly download gzip-formatted FASTQ files with `-g`.
+
+```bash
+cat SRR_Acc_List.txt | while read Run; do
+	iseq -i $Run -a -g
+done
+```
+
+![e13](./docs/img/e13.png)
+
 
 ## Usage  [中文教程](https://github.com/BioOmics/iSeq/blob/main/docs/ChineseTutorial.md)✨
 
@@ -240,25 +260,6 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 | success.log    | Save the GSA file name that has been downloaded successfully |
 | fail.log       | Save the GSA file name that has been downloaded failed       |
 
-## Example    [See more](https://github.com/BioOmics/iSeq/blob/main/docs/Examples.md)
-
-1. Download all Run sequencing data and metadata associated with an accession.
-
-```
-iseq -i PRJNA211801
-```
-
-![e01](./docs/img/e01.png)
-
-2. Batch download by Aspera with `-a` to directly download gzip-formatted FASTQ files with `-g`.
-
-```bash
-cat SRR_Acc_List.txt | while read Run; do
-	iseq -i $Run -a -g
-done
-```
-
-![e13](./docs/img/e13.png)
 
 ## Inspired 
 
