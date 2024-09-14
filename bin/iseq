@@ -1,6 +1,6 @@
 #!/bin/bash
-# Author: Haoyu Chao (haoyuchao@zju.edu.cn)
-# Last modified: 2024-04-23
+# Author: BioOmics (https://github.com/BioOmics)
+# Last modified: 2024-09-14
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -20,21 +20,20 @@ CheckSoftware axel axel
 CheckSoftware pigz pigz
 CheckSoftware ascp aspera-cli
 CheckSoftware md5sum coreutils
-CheckSoftware srapath sra-tools=2.11.0
-CheckSoftware vdb-validate sra-tools=2.11.0
+CheckSoftware srapath sra-tools
+CheckSoftware vdb-validate sra-tools
 # =======================================
 
 function usage() {
 cat << EOF
 
 Description:
-  Download sequencing data and matadata for each Run from GSA/SRA/ENA/DDBJ databases.
+  Download sequencing data and matadata for each Run from [GSA, SRA, ENA or DDBJ] databases.
 
 Usage:
   $(basename $0) -i accession [options]
 
-Input:
-  Accepted accession formats:
+Accepted accession formats:
     1.    Projects: PRJEB, PRJNA, PRJDB, PRJC, GSE
     2.     Studies: ERP, DRP, SRP, CRA
     3.  BioSamples: SAMD, SAME, SAMN, SAMC
@@ -42,22 +41,26 @@ Input:
     5. Experiments: ERX, DRX, SRX, CRX
     6.        Runs: ERR, DRR, SRR, CRR
 
-Options:
-Required parameter:
-  -i, --input       TEXT        accession (Project, Study, Sample, Experiment, or Run)
+Required option:
+  -i, --input     [text|file]   Single accession or a file containing multiple accessions.
+                                Note: Only one accession per line in the file, all accessions must be from the same database.
 
-Optional parameters:
+Optional options:
   -m, --metadata                Skip the sequencing data downloads and only fetch the metadata for the accession.
   -g, --gzip                    Download FASTQ files in gzip format directly (*.fastq.gz).
-                                note: if *.fastq.gz files are not available, SRA files will be downloaded and converted to *.fastq.gz files.
+                                Note: if *.fastq.gz files are not available, SRA files will be downloaded and converted to *.fastq.gz files.
   -q, --fastq                   Convert SRA files to FASTQ format.
-  -t, --threads     INT         The number of threads to use for converting SRA to FASTQ files or compressing FASTQ files (default: 8).
-  -e, --merge                   Merge multiple fastq files into one fastq file for each Experiment, the accession can't be the Run ID.
-  -d, --database    [ena|sra]   The database to download SRA files from (default: auto-detect),
-                                note: some SRA files may not be available in the ENA database, even if you specify "ena".
-  -p, --parallel    INT         Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
-                                note: breakpoint continuation cannot be shared between different numbers of connections.
+  -t, --threads   int           The number of threads to use for converting SRA to FASTQ files or compressing FASTQ files (default: 8).
+  -e, --merge     [ex|sa|st]    Merge multiple fastq files into one fastq file for each Experiment, Sample or Study.
+                                Note: merge by Experiment, input can't be Run ID;
+                                      merge by Sample, input can't be Run ID or Experiment ID; 
+                                      merge by Study, input can't be Run ID, Experiment ID or Sample ID.
+  -d, --database  [ena|sra]     Specify the database to download SRA sequencing data (default: auto detect).
+                                Note: new SRA files may not be available in the ENA database, even if you specify "ena".
+  -p, --parallel  int           Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
+                                Note: breakpoint continuation cannot be shared between different numbers of connections.
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
+  -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
 
@@ -74,8 +77,8 @@ function checkParameter(){
     local parameterName=$1
     local value=$2
     if [[ -z $value || $value == -* ]]; then
-        echo -e "\033[1;31mError\033[0m: No input provided for \"$1\""
-        echo -e "\033[1;32mHow to solve?\033[0m Please specify the parameter by \"$1\" option"
+        echo -e "\033[1;31mError\033[0m: No parameter provided for \"$1\""
+        echo -e "\033[1;32mHow to solve?\033[0m Please specify [ex|sa|st] by \"$1\" option"
         exit 1
     else
         return 0
@@ -89,10 +92,11 @@ while [[ $# -gt 0 ]]; do
     -d|--database) checkParameter $1 $2; if [[ $? -eq 0 ]]; then database=$2;shift 2; fi ;;
     -q|--fastq) fastq=1 ; shift 1 ;;
     -g|--gzip) gzip=1 ; shift 1 ;;
-    -e|--merge) merge=1 ; shift 1 ;;
+    -e|--merge) checkParameter $1 $2; if [[ $? -eq 0 ]]; then merge=$2;shift 2; fi ;;
     -t|--threads) checkParameter $1 $2; if [[ $? -eq 0 ]]; then threads=$2;shift 2; fi ;;
     -p|--parallel) checkParameter $1 $2; if [[ $? -eq 0 ]]; then parallel=$2;shift 2; fi ;;
     -a|--aspera) aspera=1 ; shift 1 ;;
+    -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
     -v|--version) echo "Version 1.0.0"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
@@ -106,9 +110,20 @@ done
 # Check if input is provided
 if [[ -z "$input" ]]; then
   echo -e "\033[1;31mError\033[0m: No input provided"
-  echo -e "\033[1;32mHow to solve?\033[0m Please provide an SRA accession with the -i option or check the help information above"
+  echo -e "\033[1;32mHow to solve?\033[0m Please provide the input by \"-i\" option"
   exit 1
 fi
+
+# --------------------Check if input is a file or single accession--------------------------
+accessions=()
+if [[ -f "$input" ]]; then
+    while IFS= read -r line; do
+        accessions+=("$line")
+    done < "$input"
+else
+    accessions+=("$input")
+fi
+
 
 # --------------------"-m"--------------------------
 # if not use -m, then use 0
@@ -139,7 +154,7 @@ fi
 if [[ -z "$fastq" ]]; then
     fastq=0
 else
-    CheckSoftware fasterq-dump sra-tools=2.11.0
+    CheckSoftware fasterq-dump sra-tools
 fi
 
 # --------------------"-e"--------------------------
@@ -147,10 +162,34 @@ fi
 if [[ -z "$merge" ]]; then
     merge=0
 else
-    CheckSoftware fasterq-dump sra-tools=2.11.0
-    if [[ $input =~ ^[EDSC]RR[0-9]{6,}$ ]]; then
-        echo -e "\033[1;31mError\033[0m: $input is a Run ID, can not use -e option"
-        echo -e "\033[1;32mHow to solve?\033[0m Please use a Project, Study, Sample, or Experiment accession for the \"-i\" option"
+    CheckSoftware fasterq-dump sra-tools
+    if [[ $merge =~ ^[eE][xX]$ ]]; then
+        for accession in ${accessions[@]}; do
+            if [[ $accession =~ ^[CEDS]RR[0-9]{6,}$ ]]; then
+                echo -e "\033[1;31mError\033[0m: $accession is a Run ID, can not use -e option"
+                echo -e "\033[1;32mHow to solve?\033[0m Please use a Project, Study, Sample, or Experiment accession for the \"-i\" option"
+                exit 1
+            fi
+        done
+    elif [[ $merge =~ ^[sS][aA]$ ]]; then
+        for accession in ${accessions[@]}; do
+            if [[ $accession =~ ^[CEDS]RR[0-9]{6,}$ || $accession =~ ^[CEDS]RX[0-9]{6,}$ ]]; then
+                echo -e "\033[1;31mError\033[0m: $accession is a Run ID or Experiment ID, can not use -e option"
+                echo -e "\033[1;32mHow to solve?\033[0m Please use a Project, Study, or Sample accession for the \"-i\" option"
+                exit 1
+            fi
+        done
+    elif [[ $merge =~ ^[sS][tT]$ ]]; then
+        for accession in ${accessions[@]}; do
+            if [[ $accession =~ ^[CEDS]RR[0-9]{6,}$ || $accession =~ ^[CEDS]RX[0-9]{6,}$ || $accession =~ ^[EDS]RS[0-9]{6,}$ || $accession =~ ^SAM[CEDN][A-Z]?[0-9]+$ ]]; then
+                echo -e "\033[1;31mError\033[0m: $accession is a Run ID, Experiment ID, or Sample ID, can not use -e option"
+                echo -e "\033[1;32mHow to solve?\033[0m Please use a Project or Study accession for the \"-i\" option"
+                exit 1
+            fi
+        done
+    else
+        echo -e "\033[1;31mError\033[0m: Invalid merge: $merge"
+        echo -e "\033[1;32mHow to solve?\033[0m Please use \"ex\", \"sa\", or \"st\" for the \"-e\" option"
         exit 1
     fi
 fi
@@ -184,33 +223,51 @@ elif [[ $aspera -eq 1 && $database =~ ^[sS][rR][aA]$ ]]; then
     echo -e "\033[1;32mHow to solve?\033[0m Please remove -a option or switch to the ENA database by \"-d ena\""
     exit 1
 else
-    if [[ $input == "PRJC"* || $input == "SAMC"* || $input == "CRA"* || $input == "CRX"* || $input == "CRR"* ]]; then
-        if [[ ! -f .asperaGSA.openssh ]]; then
-            wget https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh -O .asperaGSA.openssh --quiet
-        fi
+    for accession in ${accessions[@]}; do
+        if [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ || $accession =~ ^CRA[0-9]+$ || $accession =~ ^CRX[0-9]+$ || $accession =~ ^CRR[0-9]+$ ]]; then
+            if [[ ! -f .asperaGSA.openssh ]]; then
+                wget https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh -O .asperaGSA.openssh --quiet
+            fi
 
-        if [[ ! -f ".asperaGSA.openssh" ]]; then
-            echo -e "\033[1;31mError\033[0m: .asperaGSA.openssh is not exist"
-            echo -e "\033[1;32mHow to solve?\033[0m Please download GSA Aspera key file from https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh and rename it to .asperaGSA.openssh"
-            exit 1
-        fi
-        ascpKeyFile=.asperaGSA.openssh
-        
-    else
-        CheckSoftware ascp aspera-cli
-        ascpPath=$(command -v ascp)
-        ascpKeyFile1=$(dirname $ascpPath)/../etc/aspera/aspera_bypass_rsa.pem
-        ascpKeyFile2=$(dirname $ascpPath)/../etc/aspera_tokenauth_id_rsa
-        if [[ -f $ascpKeyFile1 ]]; then
-            ascpKeyFile=$ascpKeyFile1
-        elif [[ -f $ascpKeyFile2 ]]; then
-            ascpKeyFile=$ascpKeyFile2
+            if [[ ! -f ".asperaGSA.openssh" ]]; then
+                echo -e "\033[1;31mError\033[0m: .asperaGSA.openssh is not exist"
+                echo -e "\033[1;32mHow to solve?\033[0m Please download GSA Aspera key file from https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh and rename it to .asperaGSA.openssh"
+                exit 1
+            fi
+            ascpKeyFile=.asperaGSA.openssh
+            
         else
-            echo -e "\033[1;31mError\033[0m: Aspera key file not found in the path: \033[1;31m$ascpKeyFile1\033[0m OR \033[1;31m$ascpKeyFile2\033[0m"
-            echo -e "\033[1;32mHow to solve?\033[0m Please copy the Aspera key file in the above path and rename it"
-            exit 1
+            CheckSoftware ascp aspera-cli
+            ascpPath=$(command -v ascp)
+            ascpKeyFile1=$(dirname $ascpPath)/../etc/aspera/aspera_bypass_rsa.pem
+            ascpKeyFile2=$(dirname $ascpPath)/../etc/aspera_tokenauth_id_rsa
+            if [[ -f $ascpKeyFile1 ]]; then
+                ascpKeyFile=$ascpKeyFile1
+            elif [[ -f $ascpKeyFile2 ]]; then
+                ascpKeyFile=$ascpKeyFile2
+            else
+                echo -e "\033[1;31mError\033[0m: Aspera key file not found in the path: \033[1;31m$ascpKeyFile1\033[0m OR \033[1;31m$ascpKeyFile2\033[0m"
+                echo -e "\033[1;32mHow to solve?\033[0m Please copy the Aspera key file in the above path and rename it"
+                exit 1
+            fi
         fi
+    done
+fi
+
+# --------------------"-o"--------------------------
+# if use -o, cd to output directory
+if [[ -z "$output" ]]; then
+    output=$(pwd)
+else
+    if [[ ! -d $output ]]; then
+        mkdir -p $output
     fi
+    if [[ ! -w $output ]]; then
+        echo -e "\033[1;31mError\033[0m: The output directory is not writable"
+        echo -e "\033[1;32mHow to solve?\033[0m Please check the write permission of the output directory"
+        exit 1
+    fi
+    cd $output
 fi
 
 # ==================================================
@@ -320,12 +377,12 @@ function getSRAMetadata() {
 
 function downloadSRA() {
     local SRR=$1 # only SRR_ID
-    local SRALink=$(grep "$SRR" $input.metadata.tsv | tr "\t" "\n" | grep -e "ftp.sra.ebi.ac.uk/vol[0-9]/[sde]rr" | grep -v "lite" | uniq)
-    local FASTQLink=$(grep "$SRR" $input.metadata.tsv | tr "\t" "\n" | grep -e "ftp.sra.ebi.ac.uk/vol[0-9]/fastq" | uniq)
+    local SRALink=$(grep "$SRR" $accession.metadata.tsv | tr "\t" "\n" | grep -e "ftp.sra.ebi.ac.uk/vol[0-9]/[sde]rr" | grep -v "lite" | uniq)
+    local FASTQLink=$(grep "$SRR" $accession.metadata.tsv | tr "\t" "\n" | grep -e "ftp.sra.ebi.ac.uk/vol[0-9]/fastq" | uniq)
 
     if [[ $gzip -eq 1 && ! -z $FASTQLink && ! $database =~ ^[sS][rR][aA]$ && $fastq -eq 0 ]]; then 
         echo -e "\033[32mNote\033[0m: -g used, download FASTQ files in gzip format directly"
-        local layout=$(grep "$SRR" $input.metadata.tsv | awk '{if($0~"PAIRED"){print "paired"}else{print "single"}}' | uniq)
+        local layout=$(grep "$SRR" $accession.metadata.tsv | awk '{if($0~"PAIRED"){print "paired"}else{print "single"}}' | uniq)
         if [[ $layout == "single" ]]; then
             local link=$(echo $FASTQLink | tr ";" "\n" | grep "fastq.gz")
             if [[ $aspera -eq 1 ]]; then
@@ -393,7 +450,7 @@ function checkSRA() {
         if [[ -f ${SRR}_1.fastq.gz && -f ${SRR}_2.fastq.gz ]]; then
             local md5sum1=$(md5sum ${SRR}_1.fastq.gz | awk '{print $1}')
             local md5sum2=$(md5sum ${SRR}_2.fastq.gz | awk '{print $1}')
-            if grep -q "$md5sum1" ${input}.metadata.tsv && grep -q "$md5sum2" ${input}.metadata.tsv; then
+            if grep -q "$md5sum1" ${accession}.metadata.tsv && grep -q "$md5sum2" ${accession}.metadata.tsv; then
                 echo -e "\033[92m${SRR} download and md5 check successful, save ${SRR} in success.log\033[0m"
                 echo -e "$(date)\t$SRR" >> success.log
             elif [[ $count -le 1 ]]; then # retry times
@@ -413,7 +470,7 @@ function checkSRA() {
             fi
         else
             local md5sum=$(md5sum ${SRR}.fastq.gz | awk '{print $1}')
-            if grep -q "$md5sum" ${input}.metadata.tsv; then
+            if grep -q "$md5sum" ${accession}.metadata.tsv; then
                 echo -e "\033[92m${SRR} download and md5 check successful, save ${SRR} in success.log\033[0m"
                 echo -e "$(date)\t$SRR" >> success.log
             elif [[ $count -le 1 ]]; then # retry times
@@ -457,48 +514,54 @@ function checkSRA() {
 }
 
 function getGSAxlsx(){
-    local GSA=$1
-    wget --quiet --post-data="type=3&dlAcession=${CRA}" \
-    --output-document="${CRA}.metadata.xlsx" "https://ngdc.cncb.ac.cn/gsa/file/exportExcelFile"
+    local cra=$1
+    wget --quiet --post-data="type=3&dlAcession=${cra}" \
+    --output-document="${cra}.metadata.xlsx" "https://ngdc.cncb.ac.cn/gsa/file/exportExcelFile"
 }
 
 function getGSAMetadata() {
     local accession=$1
-    if [[ $accession == "CRR"* ]]; then
+    if [[ $accession =~ ^CRR[0-9]+$ || $accession =~ ^CRX[0-9]+$ ]]; then
         CRA=$(wget -qO-  https://ngdc.cncb.ac.cn/gsa/search?searchTerm=${accession} | grep -v "example" |  grep -oe "CRA[0-9]\+" | uniq)
         if [[ -z $CRA ]]; then
             echo -e "\033[1;31mError\033[0m: $accession is not a valid Run accession." >&2
             exit 1
         fi
         wget --quiet --post-data="searchTerm=${CRA}&totalDatas=9999&downLoadCount=9999" \
-                --output-document="${accession}.tmp" "https://ngdc.cncb.ac.cn/gsa/search/getRunInfo"
-        awk -va=${accession} 'NR==1{print $0}NR>1{if($0~a)print $0}' ${accession}.tmp > ${accession}.metadata.csv
+                --output-document="${accession}.tmp" "https://ngdc.cncb.ac.cn/gsa/search/getRunInfoByCra"
+        awk -vaccession=${accession} 'NR==1{print $0}NR>1{if($0~accession)print $0}' ${accession}.tmp > ${accession}.metadata.csv
         rm ${accession}.tmp
 
         if [[ ! -f ${CRA}.metadata.xlsx ]]; then
             echo -e "\033[32mNote\033[0m: ${accession} belongs to ${CRA}, ${CRA}.metadata.xlsx will also be downloaded"
             getGSAxlsx $CRA
         fi
-
-    elif [[ $accession == "PRJC"* || $accession == "SAMC"* || $accession == "CRA"* || $accession == "CRX"* ]]; then
-        wget --quiet --post-data="searchTerm=${accession}&totalDatas=9999&downLoadCount=9999" \
+    elif [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ || $accession =~ ^CRA[0-9]+$ ]]; then
+        if [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ ]]; then
+            wget --quiet --post-data="searchTerm=%26quot%3B${accession}%26quot%3BtotalDatas=9999%3BdownLoadCount=9999" \
             --output-document="${accession}.metadata.csv" "https://ngdc.cncb.ac.cn/gsa/search/getRunInfo"
+        elif [[ $accession =~ ^CRA[0-9]+$ ]]; then
+            wget --quiet --post-data="searchTerm=${accession}&totalDatas=9999&downLoadCount=9999" \
+            --output-document="${accession}.metadata.csv" "https://ngdc.cncb.ac.cn/gsa/search/getRunInfoByCra"
+        fi
+
         if [[ $(awk -F, 'NR==2{print $1}' ${accession}.metadata.csv) == "" ]]; then
             echo -e "\033[1;31mError\033[0m: $accession is not a valid Study, Sample, or Experiment accession." >&2
             rm ${accession}.metadata.csv
             exit 1
         fi
 
-       CRA=$(grep -oe "CRA[0-9]\+" ${accession}.metadata.csv | uniq)
-       if [[ ! -f ${CRA}.metadata.xlsx ]]; then
-            if [[ $accession == "CRA"* ]]; then
-                echo -e "\033[32mNote\033[0m: ${CRA}.metadata.xlsx will also be downloaded"
-                getGSAxlsx $CRA
-            else
-                echo -e "\033[32mNote\033[0m: ${accession} belongs to ${CRA}, ${CRA}.metadata.xlsx will also be downloaded"
-                getGSAxlsx $CRA
+        CRA=$(grep -oe "CRA[0-9]\+" ${accession}.metadata.csv | uniq) # when accession is PRJ, CRA may be more than one
+        while IFS= read -r cra; do
+            if [[ ! -f ${cra}.metadata.xlsx ]]; then
+                if [[ $accession =~ ^CRA[0-9]+$ ]]; then
+                    echo -e "\033[32mNote\033[0m: ${cra}.metadata.xlsx will also be downloaded"
+                else
+                    echo -e "\033[32mNote\033[0m: ${accession} belongs to ${cra}, ${cra}.metadata.xlsx will also be downloaded"
+                fi
+                getGSAxlsx "$cra"
             fi
-        fi
+        done <<< "$CRA"
     else
         echo -e "\033[1;31mError\033[0m: $accession is not a valid Study, Sample, Experiment, or Run accession." >&2
         exit 1
@@ -507,7 +570,7 @@ function getGSAMetadata() {
 
 function downloadGSA() {
     local CRR=$1 # only CRR_ID
-    local CRA=$(grep "$CRR" ${input}.metadata.csv | grep -o "CRA[0-9]\+" | uniq)
+    local CRA=$(grep "$CRR" ${accession}.metadata.csv | grep -o "CRA[0-9]\+" | uniq)
     local allLinks=$(wget -qO- https://ngdc.cncb.ac.cn/gsa/browse/${CRA}/${CRR} | grep -oE '(https|ftp)://[^"]*\.(gz|bam|tar|bz2)' | sort | uniq)
     local httpsLink=$(echo $allLinks | tr " " "\n" | grep "https://download.cncb.ac.cn")
     local ftpLink=$(echo $allLinks | tr " " "\n" | grep "ftp://download.big.ac.cn")
@@ -558,7 +621,7 @@ function checkGSA() {
     local CRR=$2
 
     if [[ ! -f $CRA.md5sum.txt ]]; then
-        md5URL=$(echo "https://download.cncb.ac.cn/"$(grep -oe "gsa[0-9]\+/$CRA\|gsa/$CRA" ${input}.metadata.csv | uniq)"/md5sum.txt")
+        md5URL=$(echo "https://download.cncb.ac.cn/"$(grep -oe "gsa[0-9]\+/$CRA\|gsa/$CRA" ${accession}.metadata.csv | uniq)"/md5sum.txt")
         wget "$md5URL" -O $CRA.md5sum.txt --quiet
     fi
 
@@ -592,7 +655,15 @@ function checkGSA() {
 
 function mergeSRArun(){
     local metadata=$1
-    local experimentList=$(grep -oe "[EDS]RX[0-9]\+" $metadata | sort | uniq)
+
+    if [[ $merge == "ex" ]]; then
+        local experimentList=$(grep -oe "[EDS]RX[0-9]\+" $metadata | sort | uniq)
+    elif [[ $merge == "sa" ]]; then
+        local experimentList=$(grep -oe "SAM[EDN][A-Z]?[0-9]\+" $metadata | sort | uniq)
+    elif [[ $merge == "st" ]]; then
+        local experimentList=$(grep -oe "PRJ[EDN][A-Z][0-9]\+" $metadata | sort | uniq)
+    fi
+
     for experiment in $experimentList; do
         local runList=$(awk -vFS="\t" -v experiment=$experiment 'NR>1 && $0~experiment {print $1}' $metadata)
         local layout=$(grep $experiment $metadata | awk '{if($0~"PAIRED"){print "paired"}else{print "single"}}' | uniq)
@@ -666,7 +737,14 @@ function mergeSRArun(){
 
 function mergeGSArun(){
     local metadata=$1
-    local experimentList=$(grep -oe "CRX[0-9]\+" $metadata | sort | uniq)
+    if [[ $merge == "ex" ]]; then
+        local experimentList=$(grep -oe "CRX[0-9]\+" $metadata | sort | uniq)
+    elif [[ $merge == "sa" ]]; then
+        local experimentList=$(grep -oe "SAMC[0-9]\+" $metadata | sort | uniq)
+    elif [[ $merge == "st" ]]; then
+        local experimentList=$(grep -oe "PRJC[A-Z][0-9]\+" $metadata | sort | uniq)
+    fi
+
     for experiment in $experimentList; do
         local colNum=$(grep $experiment $metadata | cut -d "," -f7 | awk -vFS="|" '{print NF}' | uniq)
         local rowNum=$(grep $experiment $metadata | wc -l)
@@ -734,102 +812,104 @@ function mergeGSArun(){
 # ==================process=========================
 # ==================================================
 
-if [[ $input == "PRJC"* || $input == "SAMC"* || $input == "CRA"* || $input == "CRX"* || $input == "CRR"* ]]; then
-    if [[ -f ${input}.metadata.csv ]]; then
-        echo -e "\033[32mNote\033[0m: ${input}.metadata.csv exists, skip downloading metadata for $input"
-    else
-        getGSAMetadata $input
-        CheckFile $input.metadata.csv
-    fi
-
-    if [[ $metadata -eq 0 ]]; then
-        awk -F, 'NR>1{split($5, filenames, "|");split($6, fileSizes, "|")
-            for (i=1; i<=length(filenames); i++) {fileSize = fileSizes[i] / (1024 * 1024 * 1024);printf "      %s %.2fG \t ", filenames[i], fileSize}
-            printf "\n"}' ${input}.metadata.csv
-        echo -e "\033[32mNote\033[0m: Above Run will be downloaded. You can see the details in ${input}.metadata.csv"
-        CRA=$(grep -oe "CRA[0-9]\+" ${input}.metadata.csv | uniq)
-        awk -F, 'NR>1{print $1}' ${input}.metadata.csv | while read CRR; do
-            if [[ ! -f success.log ]]; then
-                touch success.log
-            fi
-            if [[ $(grep -c $CRR success.log) -ge "1" ]]; then
-                echo -e "\033[32mNote\033[0m: ${CRR} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$CRR/d' success.log)"
-            else
-                downloadGSA $CRR
-            fi
-        done
-        rm -f $CRA.md5sum.txt
-
-        if [[ $merge -eq 1 && $? -eq 0 ]]; then
-            echo -e "\033[32mNote\033[0m: All Runs have been downloaded, start to merge them for each Experiment"
-            mergeGSArun ${input}.metadata.csv
-        fi
-    else
-        echo -e "\033[32mNote\033[0m: You choose to skip downloading GSA files (-m used), only retrieve the metadata for each Run, see ${input}.metadata.csv"
-    fi
-
-else
-    if [[ -f $input.metadata.tsv ]]; then
-        echo -e "\033[32mNote\033[0m: $input.metadata.tsv exists, skip downloading metadata for $input"
-    else
-        getSRAMetadata $input
-        CheckFile $input.metadata.tsv
-    fi
-
-    if [[ $metadata -eq 0 ]]; then
-        FASTQLinktmp=$(grep -o 'ftp\.sra\.ebi\.ac\.uk/vol[0-9]/fastq/[^ ]*\.fastq\.gz' $input.metadata.tsv)
-        if [[ $gzip -eq 1 && ! -z $FASTQLinktmp && $fastq -eq 0 ]]; then
-            awk -v FS="\t" 'NR>1{split($92, filenames, ";"); split($31, fileSizes, ";");
-                for (i=1; i<=length(filenames); i++) { split(filenames[i], parts, "/");file_extension = parts[length(parts)];
-                    fileSize = fileSizes[i] / (1024 * 1024 * 1024);printf "      %s %.2fG \t ", file_extension, fileSize;}printf "\n"}' ${input}.metadata.tsv
+for accession in ${accessions[@]}; do
+    if [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ || $accession =~ ^CRA[0-9]+$ || $accession =~ ^CRX[0-9]+$ || $accession =~ ^CRR[0-9]+$ ]]; then
+        if [[ -f ${accession}.metadata.csv ]]; then
+            echo -e "\033[32mNote\033[0m: ${accession}.metadata.csv exists, skip downloading metadata for $accession"
         else
-            awk -v FS="\t" 'NR>1{size8 = $8/1024;size23 = $23/1024/1024/1024;
-                if (size8 == 0) {if ($0~"lite"){printf "      %s\t>%.2fG\n", $1, size23} else {printf "      %s\t%.2fG\n", $1, size23}} 
-                else {printf "      %s\t%.2fG\n", $1, size8}}' $input.metadata.tsv
+            getGSAMetadata $accession
+            CheckFile $accession.metadata.csv
         fi
-        echo -e "\033[32mNote\033[0m: Above Run will be downloaded. You can see the details in $input.metadata.tsv"
 
-        awk -vFS="\t" 'NR>1 {print $1}' $input.metadata.tsv | while read SRR; do
-            if [[ ! -f success.log ]]; then
-                touch success.log
-            fi
-            if [[ $(grep -c $SRR success.log) -ge "1" ]]; then
-                echo -e "\033[32mNote\033[0m: ${SRR} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$SRR/d' success.log)"
-            elif [[ -f $SRR ]]; then
-                checkSRA $SRR
-            else
-                downloadSRA $SRR
-                checkSRA $SRR
-            fi
-
-            SRX=$(grep $SRR $input.metadata.tsv | grep -oe "[EDS]RX[0-9]\+" | sort | uniq)
-            if [[ ($fastq -eq 1 || $merge -eq 1 || $gzip -eq 1) && -f $SRR 
-            && ! -f ${SRR}_1.fastq.gz && ! -f ${SRR}_2.fastq.gz && ! -f ${SRR}.fastq.gz 
-            && ! -f ${SRX}_1.fastq.gz && ! -f ${SRX}_2.fastq.gz && ! -f ${SRX}.fastq.gz ]]; then # if SRA file is not exist, means fastq files have been downloaded
-                echo -e "\033[32mNote\033[0m: Converting $SRR to fastq files using $threads threads"
-                SrrPath=$(dirname $(realpath $SRR))
-                fasterq-dump -p -S --include-technical -e $threads -O $SrrPath $SrrPath/$SRR
-                rm -rf fasterq.tmp*
-                if [[ $gzip -eq 1 && -f $SRR ]]; then
-                    ls ${SRR}*fastq | while read fastq; do
-                        echo -e "\033[32mNote\033[0m: Compressing $fastq to $fastq.gz using $threads threads, may take a while"
-                        pigz -p $threads $fastq
-                    done
+        if [[ $metadata -eq 0 ]]; then
+            awk -F, 'NR>1{split($5, filenames, "|");split($6, fileSizes, "|")
+                for (i=1; i<=length(filenames); i++) {fileSize = fileSizes[i] / (1024 * 1024 * 1024);printf "      %s %.2fG \t ", filenames[i], fileSize}
+                printf "\n"}' ${accession}.metadata.csv
+            echo -e "\033[32mNote\033[0m: Above Run will be downloaded. You can see the details in ${accession}.metadata.csv"
+            CRA=$(grep -oe "CRA[0-9]\+" ${accession}.metadata.csv | uniq)
+            awk -F, 'NR>1{print $1}' ${accession}.metadata.csv | while read CRR; do
+                if [[ ! -f success.log ]]; then
+                    touch success.log
                 fi
+                if [[ $(grep -c $CRR success.log) -ge "1" ]]; then
+                    echo -e "\033[32mNote\033[0m: ${CRR} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$CRR/d' success.log)"
+                else
+                    downloadGSA $CRR
+                fi
+            done
+            rm -f $CRA.md5sum.txt
+
+            if [[ -n $merge && $? -eq 0 ]]; then
+                echo -e "\033[32mNote\033[0m: All Runs have been downloaded, start to merge them"
+                mergeGSArun ${accession}.metadata.csv
             fi
-        done
-
-        if [[ $merge -eq 1 && $? -eq 0 ]]; then
-            echo -e "\033[32mNote\033[0m: All Runs have been downloaded, start to merge them for each Experiment"
-            mergeSRArun $input.metadata.tsv
+        else
+            echo -e "\033[32mNote\033[0m: You choose to skip downloading GSA files (-m used), only retrieve the metadata for each accession, see ${accession}.metadata.csv"
         fi
-    else
-        echo -e "\033[32mNote\033[0m: You choose to skip downloading SRA files (-m used), only retrieve the metadata for each Run, see $input.metadata.tsv"
-    fi
-fi
 
-if [[ $? -eq 0 ]]; then
-    total_equals=$(( ($(tput cols) - ${#input} - 22) / 2 ))
-    equals=$(printf "%-${total_equals}s" "=")
-    echo "${equals// /=}${input} download finished${equals// /=}"
-fi
+    else
+        if [[ -f $accession.metadata.tsv ]]; then
+            echo -e "\033[32mNote\033[0m: $accession.metadata.tsv exists, skip downloading metadata for $accession"
+        else
+            getSRAMetadata $accession
+            CheckFile $accession.metadata.tsv
+        fi
+
+        if [[ $metadata -eq 0 ]]; then
+            FASTQLinktmp=$(grep -o 'ftp\.sra\.ebi\.ac\.uk/vol[0-9]/fastq/[^ ]*\.fastq\.gz' $accession.metadata.tsv)
+            if [[ $gzip -eq 1 && ! -z $FASTQLinktmp && $fastq -eq 0 ]]; then
+                awk -v FS="\t" 'NR>1{split($92, filenames, ";"); split($31, fileSizes, ";");
+                    for (i=1; i<=length(filenames); i++) { split(filenames[i], parts, "/");file_extension = parts[length(parts)];
+                        fileSize = fileSizes[i] / (1024 * 1024 * 1024);printf "      %s %.2fG \t ", file_extension, fileSize;}printf "\n"}' ${accession}.metadata.tsv
+            else
+                awk -v FS="\t" 'NR>1{size8 = $8/1024;size23 = $23/1024/1024/1024;
+                    if (size8 == 0) {if ($0~"lite"){printf "      %s\t>%.2fG\n", $1, size23} else {printf "      %s\t%.2fG\n", $1, size23}} 
+                    else {printf "      %s\t%.2fG\n", $1, size8}}' $accession.metadata.tsv
+            fi
+            echo -e "\033[32mNote\033[0m: Above Run will be downloaded. You can see the details in $accession.metadata.tsv"
+
+            awk -vFS="\t" 'NR>1 {print $1}' $accession.metadata.tsv | while read SRR; do
+                if [[ ! -f success.log ]]; then
+                    touch success.log
+                fi
+                if [[ $(grep -c $SRR success.log) -ge "1" ]]; then
+                    echo -e "\033[32mNote\033[0m: ${SRR} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$SRR/d' success.log)"
+                elif [[ -f $SRR ]]; then
+                    checkSRA $SRR
+                else
+                    downloadSRA $SRR
+                    checkSRA $SRR
+                fi
+
+                SRX=$(grep $SRR $accession.metadata.tsv | grep -oe "[EDS]RX[0-9]\+" | sort | uniq)
+                if [[ ($fastq -eq 1 || $merge -eq 1 || $gzip -eq 1) && -f $SRR 
+                && ! -f ${SRR}_1.fastq.gz && ! -f ${SRR}_2.fastq.gz && ! -f ${SRR}.fastq.gz 
+                && ! -f ${SRX}_1.fastq.gz && ! -f ${SRX}_2.fastq.gz && ! -f ${SRX}.fastq.gz ]]; then # if SRA file is not exist, means fastq files have been downloaded
+                    echo -e "\033[32mNote\033[0m: Converting $SRR to fastq files using $threads threads"
+                    SrrPath=$(dirname $(realpath $SRR))
+                    fasterq-dump -p -S --include-technical -e $threads -O $SrrPath $SrrPath/$SRR
+                    rm -rf fasterq.tmp*
+                    if [[ $gzip -eq 1 && -f $SRR ]]; then
+                        ls ${SRR}*fastq | while read fastq; do
+                            echo -e "\033[32mNote\033[0m: Compressing $fastq to $fastq.gz using $threads threads, may take a while"
+                            pigz -p $threads $fastq
+                        done
+                    fi
+                fi
+            done
+
+            if [[ -n $merge && $? -eq 0 ]]; then
+                echo -e "\033[32mNote\033[0m: All Runs have been downloaded, start to merge them"
+                mergeSRArun $accession.metadata.tsv
+            fi
+        else
+            echo -e "\033[32mNote\033[0m: You choose to skip downloading SRA files (-m used), only retrieve the metadata for each accession, see $accession.metadata.tsv"
+        fi
+    fi
+
+    if [[ $? -eq 0 ]]; then
+        total_equals=$(( ($(tput cols) - ${#accession} - 22) / 2 ))
+        equals=$(printf "%-${total_equals}s" "=")
+        echo "${equals// /=}${accession} download finished${equals// /=}"
+    fi
+done
