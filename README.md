@@ -15,6 +15,30 @@
 > [!IMPORTANT]
 > To use iSeq, Your system must be **connected to the network** and **support FTP, HTTP, and HTTPS protocols**.
 
+## Update Notes:
+### 2024.09.14
+-  **New `-e` option for merging FASTQ files**:
+Added a `-e` option to merge multiple FASTQ files into a single file for each `Experiment (-e ex)`, `Sample (-e sa)`, or `Study (-e st)`.
+
+-  **New `-i` option for input**:
+The program can now accept a `file` containing multiple accession numbers as input.
+
+-  **API change for GSA metadata download**:
+The API endpoint has been updated from `getRunInfo` to `getRunInfoByCra` for downloading GSA metadata.
+
+<details>
+<summary>More Updates</summary>
+	
+-  **Save result to personal directory**:
+The output results will now be saved in the user's personal directory.
+
+-  **Updated regex for SAMC matching**:
+The matching pattern for SAMC has been changed from `SAMC[A-Z]?[0-9]+` to `SAMC[0-9]+`.
+
+-  **Dependency update for sra-tools**:
+The version requirement for sra-tools has been updated from `sra-tools=2.11` to `sra-tools>=2.11.0`.
+</details>
+
 
 ## Features
 -  **Multiple Database Support**: Supports multiple bioinformatics databases (GSA/SRA/ENA/DDBJ/GEO).
