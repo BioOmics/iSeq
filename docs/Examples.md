@@ -86,21 +86,41 @@
 
 8.  Download gzip-formatted FASTQ files directly
 
-   ```bash
-   iseq -i SRR1178105 -g
-   ```
+     ```bash
+     iseq -i SRR1178105 -g
+     ```
 
-   ![e08](./img/e08.png)
+     ![e08](./img/e08.png)
 
-9.  Merge multiple FASTQ files into one FASTQ file for each Experiment
+9.  Merge multiple FASTQ files into one FASTQ file
 
-   ```bash
-   iseq -i CRX020217 -e
-   ```
+    Merge multiple FASTQ files into one FASTQ file for `each Experiment`.
 
-   ![e09](./img/e09.png)
+    ```bash
+    iseq -i CRX020217 -e ex
+    ```
 
-10. Download sequencing data from SRA database
+    ![e09](./img/e09_1.png)
+
+    Merge multiple FASTQ files into one FASTQ file for `each Sample`.
+
+    ```bash
+    rm success.log
+    iseq -i SAMC017083 -e sa
+    ```
+
+    ![e09](./img/e09_2.png)
+
+    Merge multiple FASTQ files into one FASTQ file for `each Study`.
+
+    ```bash
+    rm success.log
+    iseq -i PRJCA000613 -e st
+    ```
+
+    ![e09](./img/e09_3.png)
+    
+11. Download sequencing data from SRA database
 
     ```bash
     iseq -i SRR1178105 -d sra
