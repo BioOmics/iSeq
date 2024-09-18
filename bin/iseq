@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2024-09-14
+# Last modified: 2024-09-18
 # =======================================
 function CheckSoftware(){
     local software1=$1
