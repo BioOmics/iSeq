@@ -270,6 +270,10 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 > [!NOTE]
 > **Note 2**: Since Aspera requires a key file, **iSeq** will **automatically search for the key** file in the `conda` environment or the `~/.aspera` directory. If the key file is not found, downloading will not be possible.
 
+### 10. `-o`, `--output`
+
+The output directory. If not exists, it will be created (default: current directory).
+
 ## Output
 
 - If the query accession in **SRA/ENA/DDBJ/GEO** database, the following files will be generated:
