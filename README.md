@@ -69,7 +69,7 @@ conda activate iseq
 # Use the following command to check whether dependent software is installed
 iseq --version
 ```
-## Example    [See more](https://github.com/BioOmics/iSeq/blob/main/docs/Examples.md)
+## Example ([See more](https://github.com/BioOmics/iSeq/blob/main/docs/Examples.md))
 
 1. Download all Run sequencing data and metadata associated with an accession.
 
@@ -82,15 +82,13 @@ iseq -i PRJNA211801
 2. Batch download by Aspera with `-a` to directly download gzip-formatted FASTQ files with `-g`.
 
 ```bash
-cat SRR_Acc_List.txt | while read Run; do
-	iseq -i $Run -a -g
-done
+iseq -i SRR_Acc_List.txt -a -g
 ```
 
 ![e13](./docs/img/e13.png)
 
 
-## Usage  [中文教程](https://github.com/BioOmics/iSeq/blob/main/docs/ChineseTutorial.md)✨
+## Usage  ([中文教程](https://github.com/BioOmics/iSeq/blob/main/docs/ChineseTutorial.md)✨)
 
 ```{bash}
 $ iseq --help
@@ -98,29 +96,30 @@ $ iseq --help
 Usage:
   iseq -i accession [options]
 
-Options:
-Required parameter:
-  -i, --input       TEXT        accession (Project, Study, Sample, Experiment, or Run)
+Required option:
+  -i, --input     [text|file]   Single accession or a file containing multiple accessions.
+                                Note: Only one accession per line in the file, all accessions must be from the same database.
 
-Optional parameters:
+Optional options:
   -m, --metadata                Skip the sequencing data downloads and only fetch the metadata for the accession.
   -g, --gzip                    Download FASTQ files in gzip format directly (*.fastq.gz).
-                                note: if *.fastq.gz files are not available, SRA files will be downloaded and converted to *.fastq.gz files.
+                                Note: if *.fastq.gz files are not available, SRA files will be downloaded and converted to *.fastq.gz files.
   -q, --fastq                   Convert SRA files to FASTQ format.
-  -t, --threads     INT         The number of threads to use for converting SRA to FASTQ files or compressing FASTQ files (default: 8).
-  -e, --merge                   Merge multiple fastq files into one fastq file for each Experiment, the accession can't be the Run ID.
-  -d, --database    [ena|sra]   The database to download SRA files from (default: auto-detect),
-                                note: some SRA files may not be available in the ENA database, even if you specify "ena".
-  -p, --parallel    INT         Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
-                                note: breakpoint continuation cannot be shared between different numbers of connections.
+  -t, --threads   int           The number of threads to use for converting SRA to FASTQ files or compressing FASTQ files (default: 8).
+  -e, --merge     [ex|sa|st]    Merge multiple fastq files into one fastq file for each Experiment, Sample or Study.
+  -d, --database  [ena|sra]     Specify the database to download SRA sequencing data (default: ena).
+                                Note: new SRA files may not be available in the ENA database, even if you specify "ena".
+  -p, --parallel  int           Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
+                                Note: breakpoint continuation cannot be shared between different numbers of connections.
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
+  -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
 ```
 
 ### 1. `-i`, `--input`
 
-Input the accession you want to download.
+Input the accession you want to download, You also can input a file containing multiple accessions (Only one accession per line in the file, all accessions must be from the same database).
 
 ```bash
 iseq -i PRJNA211801
