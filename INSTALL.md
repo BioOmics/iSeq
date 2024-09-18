@@ -19,8 +19,7 @@ Anyway, as long as you install the following dependencies and **add them to the 
 - [sra-tools](https://github.com/ncbi/sra-tools) (>=2.11.0), fetching SRA download links
 
 ```{bash}
-# Due to the sra-tools >= 3.0 use CMake to build, sometimes it may be downloaded failed by conda, so use sra-tools=2.11.0
-conda create -n iseq -c conda-forge -c bioconda pigz wget axel aspera-cli sra-tools=2.11 
+conda create -n iseq -c conda-forge -c bioconda pigz wget axel aspera-cli sra-tools
 # Check sotfware version
 pigz --version | awk 'NR==1{print $2}'
 wget --version | awk 'NR==1{print $3}'
