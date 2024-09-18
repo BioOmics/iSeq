@@ -133,12 +133,10 @@
 1. Use 10 connections to download SRA files in parallel with `-p 10`, then demultiplex into FASTQ files with the default 8 threads using `-q` and quickly compress with `-g`. Finally, merge Runs from the same Experiment with `-e`.
 
    ```bash
-   iseq -i SRX183509 -q -g -p 10 -e ex
+   iseq -i SRX2993509 -q -g -p 10 -e ex
    ```
 
    ![e11](./img/e11.png)
-
-   ![e11_1](./img/e11_1.png)
 
 2.  Use Aspera with `-a` to directly download gzip-formatted FASTQ files with `-g`, and then merge Runs from the same Experiment. If there is only one Run, rename it with `-e`.
 
