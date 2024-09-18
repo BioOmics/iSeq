@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2024-09-18
+# Last modified: 2024-09-14
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -52,6 +52,9 @@ Optional options:
   -q, --fastq                   Convert SRA files to FASTQ format.
   -t, --threads   int           The number of threads to use for converting SRA to FASTQ files or compressing FASTQ files (default: 8).
   -e, --merge     [ex|sa|st]    Merge multiple fastq files into one fastq file for each Experiment, Sample or Study.
+                                ex: merge all fastq files of the same Experiment into one fastq file. Accession format: ERX, DRX, SRX, CRX.
+                                sa: merge all fastq files of the same Sample into one fastq file. Accession format: ERS, DRS, SRS, SAMC, GSM.
+                                st: merge all fastq files of the same Study into one fastq file. Accession format: ERP, DRP, SRP, CRA.
   -d, --database  [ena|sra]     Specify the database to download SRA sequencing data (default: ena).
                                 Note: new SRA files may not be available in the ENA database, even if you specify "ena".
   -p, --parallel  int           Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
@@ -693,7 +696,7 @@ function mergeSRArun(){
                     fi
                 fi
             fi
-        elif [[ $gzip -eq 1 && ( -f ${experiment}.fastq || -f ${experiment}_1.fastq || -f ${experiment}_2.fastq ) ]]; then
+        elif [[ -f ${SRR}.fastq || -f ${SRR}_1.fastq || -f ${SRR}_2.fastq ]]; then
             if [[ -f ${experiment}.fastq || -f ${experiment}_1.fastq ]]; then
                 echo -e "\033[32mNote\033[0m: ${experiment} has been merged, skip"
             else
@@ -727,7 +730,8 @@ function mergeSRArun(){
                 fi
             fi
         else
-            echo -e "\033[32mNote\033[0m: ${experiment} has been merged, skip"
+            echo -e "\033[1;31mError\033[0m: $SRR can't be found when merge $experiment" >&2
+            exit 1
         fi
     done
 }
@@ -879,7 +883,7 @@ for accession in ${accessions[@]}; do
                 fi
 
                 SRX=$(grep $SRR $accession.metadata.tsv | grep -oe "[EDS]RX[0-9]\+" | sort | uniq)
-                if [[ ($fastq -eq 1 || $merge -eq 1 || $gzip -eq 1) && -f $SRR 
+                if [[ ($fastq -eq 1 || "$merge" != 0 || $gzip -eq 1) && -f $SRR 
                 && ! -f ${SRR}_1.fastq.gz && ! -f ${SRR}_2.fastq.gz && ! -f ${SRR}.fastq.gz 
                 && ! -f ${SRX}_1.fastq.gz && ! -f ${SRX}_2.fastq.gz && ! -f ${SRX}.fastq.gz ]]; then # if SRA file is not exist, means fastq files have been downloaded
                     echo -e "\033[32mNote\033[0m: Converting $SRR to fastq files using $threads threads"
