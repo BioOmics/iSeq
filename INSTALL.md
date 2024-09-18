@@ -19,6 +19,7 @@ Anyway, as long as you install the following dependencies and **add them to the 
 - [sra-tools](https://github.com/ncbi/sra-tools) (>=2.11.0), fetching SRA download links
 
 ```{bash}
+# all softwares can be installed by conda
 conda create -n iseq -c conda-forge -c bioconda pigz wget axel aspera-cli sra-tools
 # Check sotfware version
 pigz --version | awk 'NR==1{print $2}'
@@ -38,7 +39,6 @@ iseq --version
 > ln -sf /usr/bin/wget $(which wget)
 > # Including the 'srapath'. you can install SRA Toolkit and then change the path below to your own.
 > ln -sf ~/YourPathway/sratoolkit/bin/srapath $(which srapath)
-
 
 ## Here is a tutorial on how to install dependencies from source 
 
