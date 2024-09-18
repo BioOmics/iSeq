@@ -6,29 +6,33 @@ $ iseq --help
 Usage:
   iseq -i accession [options]
 
-Options:
-Required parameter:
-  -i, --input       TEXT        accession (Project, Study, Sample, Experiment, or Run)
+Required option:
+  -i, --input     [text|file]   Single accession or a file containing multiple accessions.
+                                Note: Only one accession per line in the file, all accessions must be from the same database.
 
-Optional parameters:
+Optional options:
   -m, --metadata                Skip the sequencing data downloads and only fetch the metadata for the accession.
   -g, --gzip                    Download FASTQ files in gzip format directly (*.fastq.gz).
-                                note: if *.fastq.gz files are not available, SRA files will be downloaded and converted to *.fastq.gz files.
+                                Note: if *.fastq.gz files are not available, SRA files will be downloaded and converted to *.fastq.gz files.
   -q, --fastq                   Convert SRA files to FASTQ format.
-  -t, --threads     INT         The number of threads to use for converting SRA to FASTQ files or compressing FASTQ files (default: 8).
-  -e, --merge                   Merge multiple fastq files into one fastq file for each Experiment, the accession can't be the Run ID.
-  -d, --database    [ena|sra]   The database to download SRA files from (default: auto-detect),
-                                note: some SRA files may not be available in the ENA database, even if you specify "ena".
-  -p, --parallel    INT         Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
-                                note: breakpoint continuation cannot be shared between different numbers of connections.
+  -t, --threads   int           The number of threads to use for converting SRA to FASTQ files or compressing FASTQ files (default: 8).
+  -e, --merge     [ex|sa|st]    Merge multiple fastq files into one fastq file for each Experiment, Sample or Study.
+                                ex: merge all fastq files of the same Experiment into one fastq file. Accession format: ERX, DRX, SRX, CRX.
+                                sa: merge all fastq files of the same Sample into one fastq file. Accession format: ERS, DRS, SRS, SAMC, GSM.
+                                st: merge all fastq files of the same Study into one fastq file. Accession format: ERP, DRP, SRP, CRA.
+  -d, --database  [ena|sra]     Specify the database to download SRA sequencing data (default: ena).
+                                Note: new SRA files may not be available in the ENA database, even if you specify "ena".
+  -p, --parallel  int           Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
+                                Note: breakpoint continuation cannot be shared between different numbers of connections.
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
+  -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
 ```
 
 ### 1. `-i`, `--input`
 
-输入你想下载的accession，首先获取accession的metadata，然后逐一对包含在内的Run ID进行下载。
+输入你想下载的accession，首先获取accession的metadata，然后逐一对包含在内的Run ID进行下载。v1.1.0版本之后可以接收文件输入，每行一个accession。但是要确保这些accession来自同一个数据库，因为不同数据库使用的密钥有时候不一致会导致下载失败，尤其是在使用aspera下载数据的时候。
 
 ```bash
 iseq -i PRJNA211801
@@ -114,16 +118,16 @@ iseq -i SRR1178105 -q -t 10
 
 ### 6. `-e`, `--merge`
 
-将Experiment中的多个FASTQ文件合并为一个FASTQ文件。
+将Experiment中的多个FASTQ文件合并为一个FASTQ文件。 v1.1.0版本之后，不仅可以对同一个Experiment中的多个FASTQ文件合并，还可以选择不用的参数对Sample (-e sa)或者Study (-e st)进行合并。
 
 ```bash
-iseq -i SRX003906 -e -g
+iseq -i SRX003906 -g -e ex
 ```
 
 虽然大多数情况下，一个Experiment仅包含一个Run，但是有些测序数据中的Experiment中可能包含多个Run（如[SRX003906](https://www.ebi.ac.uk/ena/browser/view/SRX003906), [CRX020217](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX020217)），因此，可以通过`-e`参数将Experiment中的多个FASTQ文件合并为一个FASTQ文件。考虑到双端测序时，`fastq_1`和`fastq_2`文件需要同时合并且对应行号的序列名需要保持一致，因此，iSeq会按照相同的顺序合并多个FASTQ文件。最终，对于单端测序数据会生成一个文件：`SRX*.fastq.gz`，对于双端测序数据会生成两个文件：`SRX*_1.fastq.gz`和`SRX*_2.fastq.gz`。
 
 > [!NOTE]
-> **注意1**：如果accession是Run ID，则不能使用`-e`参数。目前，iSeq支持合并gzip压缩和未压缩的FASTQ文件，对于bam文件和tar.gz文件等暂不支持合并。
+> **注意1**：如果accession是Run ID，则不能使用`-e`参数，反正就是你想合并的时候，输入的accession必须大于等于要合并的那一级所需要的accession。目前，iSeq支持合并gzip压缩和未压缩的FASTQ文件，对于bam文件和tar.gz文件等暂不支持合并。
 
 > [!NOTE]
 > **注意2**：正常情况下，一个Experiment仅包含一个Run时，相同的Run应该有相同的前缀。如`SRR52991314_1.fq.gz`和`SRR52991314_2.fq.gz`都有相同的前缀名`SRR52991314`，此时，iSeq会直接重命名为`SRX*_1.fastq.gz`和`SRX*_2.fastq.gz`。但是有例外的情况，如[CRX006713](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX006713)中包含有一个Run为`CRR007192`，但是该Run包含多个前缀名不同的文件，此时，iSeq会直接重命名为`SRX*_原本的文件名`，如这里将直接重命名为：`CRX006713_CRD015671.gz`和`CRX006713_CRD015672.gz`。
@@ -172,3 +176,8 @@ iseq -i PRJNA211801 -a -g
 
 > [!NOTE]
 > **注意2**：由于`Aspera`需要key文件，因此，`iSeq`会自动在`conda`环境或者`~/.aspera`目录下查找key文件，如果没有找到，则无法下载。
+
+### 10. `-o`, `--output`
+
+v1.1.0之后可以选择输出文件的位置，如果不存在相应的文件夹，则创建
+
