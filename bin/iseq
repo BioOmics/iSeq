@@ -52,10 +52,7 @@ Optional options:
   -q, --fastq                   Convert SRA files to FASTQ format.
   -t, --threads   int           The number of threads to use for converting SRA to FASTQ files or compressing FASTQ files (default: 8).
   -e, --merge     [ex|sa|st]    Merge multiple fastq files into one fastq file for each Experiment, Sample or Study.
-                                Note: merge by Experiment, input can't be Run ID;
-                                      merge by Sample, input can't be Run ID or Experiment ID; 
-                                      merge by Study, input can't be Run ID, Experiment ID or Sample ID.
-  -d, --database  [ena|sra]     Specify the database to download SRA sequencing data (default: auto detect).
+  -d, --database  [ena|sra]     Specify the database to download SRA sequencing data (default: ena).
                                 Note: new SRA files may not be available in the ENA database, even if you specify "ena".
   -p, --parallel  int           Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
                                 Note: breakpoint continuation cannot be shared between different numbers of connections.
@@ -98,7 +95,7 @@ while [[ $# -gt 0 ]]; do
     -a|--aspera) aspera=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.0.0"; exit 0 ;;
+    -v|--version) echo "Version 1.1.0"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -116,7 +113,7 @@ fi
 
 # --------------------Check if input is a file or single accession--------------------------
 accessions=()
-if [[ -f "$input" ]]; then
+if file "$input" | grep -q 'text'; then
     while IFS= read -r line; do
         accessions+=("$line")
     done < "$input"
@@ -674,10 +671,10 @@ function mergeSRArun(){
             else
                 if [[ $(echo $runList | wc -w) -eq 1 ]]; then # if only one run in the experiment, just rename it
                     if [[ $layout == "single" ]]; then
-                            echo -e "\033[32mNote\033[0m: $experiment only has one run, rename it to $experiment.fastq.gz"
+                            echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to $experiment.fastq.gz"
                             mv ${runList}.fastq.gz ${experiment}.fastq.gz
                     else
-                        echo -e "\033[32mNote\033[0m: $experiment only has one run, rename it to ${experiment}_1.fastq.gz and ${experiment}_2.fastq.gz"
+                        echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to ${experiment}_1.fastq.gz and ${experiment}_2.fastq.gz"
                         mv ${runList}_1.fastq.gz ${experiment}_1.fastq.gz
                         mv ${runList}_2.fastq.gz ${experiment}_2.fastq.gz
                     fi
@@ -703,14 +700,14 @@ function mergeSRArun(){
                 if [[ $(echo $runList | wc -w) -eq 1 ]]; then # if only one run in the experiment, just rename it
                     if [[ $layout == "single" ]]; then
                         if [[ $runList =~ _1.fastq ]]; then # maybe is a single cell data
-                            echo -e "\033[32mNote\033[0m: $experiment only has one run, rename it to ${experiment}_1.fastq"
+                            echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to ${experiment}_1.fastq"
                             mv ${runList}_1.fastq ${experiment}_1.fastq
                         else
-                            echo -e "\033[32mNote\033[0m: $experiment only has one run, rename it to $experiment.fastq"
+                            echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to $experiment.fastq"
                             mv ${runList}.fastq ${experiment}.fastq
                         fi
                     else
-                        echo -e "\033[32mNote\033[0m: $experiment only has one run, rename it to ${experiment}_1.fastq and ${experiment}_2.fastq"
+                        echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to ${experiment}_1.fastq and ${experiment}_2.fastq"
                         mv ${runList}_1.fastq ${experiment}_1.fastq
                         mv ${runList}_2.fastq ${experiment}_2.fastq
                     fi
@@ -839,7 +836,7 @@ for accession in ${accessions[@]}; do
             done
             rm -f $CRA.md5sum.txt
 
-            if [[ -n $merge && $? -eq 0 ]]; then
+            if [[ "$merge" != 0 && $? -eq 0 ]]; then
                 echo -e "\033[32mNote\033[0m: All Runs have been downloaded, start to merge them"
                 mergeGSArun ${accession}.metadata.csv
             fi
@@ -898,7 +895,7 @@ for accession in ${accessions[@]}; do
                 fi
             done
 
-            if [[ -n $merge && $? -eq 0 ]]; then
+            if [[ "$merge" != 0 && $? -eq 0 ]]; then
                 echo -e "\033[32mNote\033[0m: All Runs have been downloaded, start to merge them"
                 mergeSRArun $accession.metadata.tsv
             fi
