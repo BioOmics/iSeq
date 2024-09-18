@@ -207,15 +207,18 @@ Considering that sequencing data files are generally large, you can specify the 
 
 ### 6. `-e`, `--merge`
 
-Merge **multiple FASTQ** files from an Experiment into **one FASTQ** file.
+Merge **multiple FASTQ** files into **one FASTQ** file for each Experiment (`ex`), Sample (`sa`) or Study (`st`) .
 
 ```bash
-iseq -i SRX003906 -e -g
+iseq -i SRX003906 -g -e ex
 ```
 Although in most cases, an Experiment contains only one Run, some sequencing data may have multiple Runs within an Experiment (e.g., [SRX003906](https://www.ebi.ac.uk/ena/browser/view/SRX003906), [CRX020217](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX020217)). Hence, you can use the `-e` parameter to merge multiple FASTQ files from an Experiment into one. Considering paired-end sequencing, where `fastq_1` and `fastq_2` files need to be merged simultaneously and the sequence names in corresponding lines need to remain consistent, **iSeq** will merge multiple FASTQ files in the **same order**. Ultimately, for **single-end** sequencing data, a single file **`SRX*.fastq.gz`** will be generated, and for **paired-end** sequencing data, two files **`SRX*_1.fastq.gz`** and **`SRX*_2.fastq.gz`** will be generated.
 
 > [!NOTE]
-> **Note 1**: If the accession is a **Run ID**, the `-e` parameter cannot be used. Currently, **iSeq** supports merging **both gzip-compressed and uncompressed FASTQ** files, but does not support merging files such as **BAM files and tar.gz** files.
+> **Note 1**: If the accession is a **Run ID**, the `-e` parameter cannot be used (see below). Currently, **iSeq** supports merging **both gzip-compressed and uncompressed FASTQ** files, but does not support merging files such as **BAM files and tar.gz** files.
+- `-e ex`: merge all fastq files of the same **Experiment** into one fastq file. Accepted accession format: `ERX, DRX, SRX, CRX`.
+- `-e sa`: merge all fastq files of the same **Sample** into one fastq file. Accepted accession format: `ERS, DRS, SRS, SAMC, GSM`.
+- `-e st`: merge all fastq files of the same **Study** into one fastq file. Accepted accession format: `ERP, DRP, SRP, CRA`.
 
 > [!NOTE]
 > **Note 2**: Normally, when an Experiment contains only one Run, identical Runs should have the **same prefix**. For example, `SRR52991314_1.fq.gz` and `SRR52991314_2.fq.gz` have the same prefix `SRR52991314`. In this case, **iSeq** will directly **rename** them to **`SRX*_1.fastq.gz`** and **`SRX*_2.fastq.gz`**. However, there are exceptions, such as in [CRX006713](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX006713) where a Run `CRR007192` contains files with different prefixes. In such cases, **iSeq** will **rename** them as **`SRX*_original_filename`**, for example, they will be renamed as `CRX006713_CRD015671.gz` and `CRX006713_CRD015672.gz`.
