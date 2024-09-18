@@ -142,13 +142,13 @@
 
 2.  Use Aspera with `-a` to directly download gzip-formatted FASTQ files with `-g`, and then merge Runs from the same Experiment. If there is only one Run, rename it with `-e`.
 
-   ```bash
-   iseq -i PRJNA211801 -a -g -e
-   ```
+    ```bash
+    iseq -i PRJNA211801 -a -g -e ex
+    ```
 
-   ![e12](./img/e12.png)
+    ![e12](./img/e12.png)
 
-3. Batch download and using Aspera with `-a` to directly download gzip-formatted FASTQ files with `-g`.
+3. Batch download by giving a file and using Aspera with `-a` to directly download gzip-formatted FASTQ files with `-g`.
 
    ```bash
    iseq -i SRR_Acc_List.txt -a -g
