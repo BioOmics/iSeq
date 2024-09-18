@@ -37,9 +37,12 @@ The matching pattern for SAMC has been changed from `SAMC[A-Z]?[0-9]+` to `SAMC[
 
 -  **Dependency update for sra-tools**:
 The version requirement for sra-tools has been updated from `sra-tools=2.11` to `sra-tools>=2.11.0`.
-</details>
 
 - **Fix some bugs**
+
+</details>
+
+
 
 
 ## Features
