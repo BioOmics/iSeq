@@ -21,7 +21,7 @@
 Added a `-e` option to merge multiple FASTQ files into a single file for each `Experiment (-e ex)`, `Sample (-e sa)`, or `Study (-e st)`.
 
 -  **New `-i` option for input**:
-The program can now accept a `file` containing multiple accession numbers as input.
+`iSeq` can now accept a `file` containing multiple accession numbers as input by `-i fileName`.
 
 -  **API change for GSA metadata download**:
 The API endpoint has been updated from `getRunInfo` to `getRunInfoByCra` for downloading GSA metadata.
@@ -30,7 +30,7 @@ The API endpoint has been updated from `getRunInfo` to `getRunInfoByCra` for dow
 <summary>More Updates</summary>
 	
 -  **Save result to personal directory**:
-The output results will now be saved in the user's personal directory.
+The output results will now be saved in the user's personal directory by `-o` option.
 
 -  **Updated regex for SAMC matching**:
 The matching pattern for SAMC has been changed from `SAMC[A-Z]?[0-9]+` to `SAMC[0-9]+`.
