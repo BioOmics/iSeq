@@ -1,7 +1,7 @@
 ## Install the latest version of iSeq
 
 ```bash
-version="1.0.0"
+version="1.1.0"
 wget "https://github.com/BioOmics/iSeq/releases/download/v${version}/iSeq-v${version}.tar.gz"
 tar -zvxf "iSeq-v${version}.tar.gz"
 cd iSeq/bin/
