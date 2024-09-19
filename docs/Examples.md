@@ -29,7 +29,15 @@
 
    ![e03](./img/e03.png)
 
-2. Download all sequencing data and metadata associated with an Experiment or a BioSample
+   ```bash
+   iseq -i SRR931847 -o PRJNA211801
+   ```
+
+   iSeq will save result in `PRJNA211801` directory.
+
+   ![e13](./img/e13.png)
+
+3. Download all sequencing data and metadata associated with an Experiment or a BioSample
 
    ```bash
    iseq -i SRX477044
@@ -37,14 +45,14 @@
    iseq -i GSM7417667
    ```
 
-3. Download a single sequencing data and metadata associated with a Run
+4. Download a single sequencing data and metadata associated with a Run
 
    ```bash
    iseq -i SRR1178105
    iseq -i CRR311377
    ```
 
-4. Only download metadata information
+5. Only download metadata information
 
    ```bash
    iseq -i PRJNA211801 -m
@@ -52,7 +60,7 @@
 
    ![e04](./img/e04.png)
 
-5. Download SRA files and convert them to FASTQ files
+6. Download SRA files and convert them to FASTQ files
 
    ```bash
    iseq -i SRR1178105 -q
@@ -60,7 +68,7 @@
 
    ![e05](./img/e05.png)
 
-6. Download sequencing data in parallel with 10 connections
+7. Download sequencing data in parallel with 10 connections
 
    ```bash
    iseq -i SRR1178105 -p 10
@@ -68,7 +76,7 @@
 
    ![e06](./img/e06.png)
 
-7. Download sequencing data by Aspera
+8. Download sequencing data by Aspera
 
    ```bash
    iseq -i SRR1178105 -a
@@ -84,7 +92,7 @@
 
    ![e07_1](./img/e07_1.png)
 
-8.  Download gzip-formatted FASTQ files directly
+9.  Download gzip-formatted FASTQ files directly
 
      ```bash
      iseq -i SRR1178105 -g
@@ -92,7 +100,7 @@
 
      ![e08](./img/e08.png)
 
-9.  Merge multiple FASTQ files into one FASTQ file
+10.  Merge multiple FASTQ files into one FASTQ file
 
     Merge multiple FASTQ files into one FASTQ file for `each Experiment`.
 
