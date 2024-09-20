@@ -69,7 +69,7 @@ The version requirement for sra-tools has been updated from `sra-tools=2.11` to 
 conda create -n iseq -c conda-forge -c bioconda iseq
 conda activate iseq
 ```
-### 2. The latest version of iSeq (v1.0) can also be installed from source, see [INSTALL](https://github.com/BioOmics/iSeq/blob/main/INSTALL.md)
+### 2. The latest version of iSeq (v1.1.0) can also be installed from source, see [INSTALL](https://github.com/BioOmics/iSeq/blob/main/INSTALL.md)
 ```{bash}
 # Use the following command to check whether dependent software is installed
 iseq --version
