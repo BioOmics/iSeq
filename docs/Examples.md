@@ -35,7 +35,7 @@
 
    iSeq will save result in `PRJNA211801` directory.
 
-   ![e13](./img/e13.png)
+   ![e13](./img/e14.png)
 
 3. Download all sequencing data and metadata associated with an Experiment or a BioSample
 
