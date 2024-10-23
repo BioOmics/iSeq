@@ -25,6 +25,7 @@ Optional options:
   -p, --parallel  int           Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
                                 Note: breakpoint continuation cannot be shared between different numbers of connections.
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
+  -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
