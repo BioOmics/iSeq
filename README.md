@@ -17,7 +17,9 @@
 
 ## Update Notes:
 ### 2024.10.23
-- New `-s` / `--speed` option to set the download speed limit (MB/s) (default: 1000 MB/s). Such as `iseq -i SRR7706354 -s 10`
+- **New `-s`, `--speed` option** to set the download speed limit (MB/s) (default: 1000 MB/s). Such as `iseq -i SRR7706354 -s 10`
+-  **Dependency update for sra-tools**:
+The version requirement for sra-tools has been updated from `sra-tools=2.11` to `sra-tools>=2.11.0`.
 
 ### 2024.09.14
 -  **New `-e` option for merging FASTQ files**:
@@ -37,9 +39,6 @@ The output results will now be saved in the user's personal directory by `-o` op
 
 -  **Updated regex for SAMC matching**:
 The matching pattern for SAMC has been changed from `SAMC[A-Z]?[0-9]+` to `SAMC[0-9]+`.
-
--  **Dependency update for sra-tools**:
-The version requirement for sra-tools has been updated from `sra-tools=2.11` to `sra-tools>=2.11.0`.
 
 - **Fix some bugs**
 
