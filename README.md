@@ -16,6 +16,9 @@
 > To use iSeq, Your system must be **connected to the network** and **support FTP, HTTP, and HTTPS protocols**.
 
 ## Update Notes:
+### 2024.10.23
+- New `-s` / `--speed` option to set the download speed limit (MB/s) (default: 1000 MB/s). Such as `iseq -i SRR7706354 -s 10`
+
 ### 2024.09.14
 -  **New `-e` option for merging FASTQ files**:
 Added a `-e` option to merge multiple FASTQ files into a single file for each `Experiment (-e ex)`, `Sample (-e sa)`, or `Study (-e st)`.
@@ -69,7 +72,7 @@ The version requirement for sra-tools has been updated from `sra-tools=2.11` to 
 conda create -n iseq -c conda-forge -c bioconda iseq
 conda activate iseq
 ```
-### 2. The latest version of iSeq (v1.1.0) can also be installed from source, see [INSTALL](https://github.com/BioOmics/iSeq/blob/main/INSTALL.md)
+### 2. The latest version of iSeq can also be installed from source, see [INSTALL](https://github.com/BioOmics/iSeq/blob/main/INSTALL.md)
 ```{bash}
 # Use the following command to check whether dependent software is installed
 iseq --version
@@ -268,11 +271,15 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 > **Note 1**: When accessing the **GSA** database, if download links from **Huawei Cloud** are available, **iSeq** will prioritize downloading through Huawei Cloud, even if the `-a` parameter is used. This is because Huawei Cloud offers faster and more stable download speeds. Therefore, when downloading GSA data, it's **recommended to use the `-a` paramete**r. This way, if access to Huawei Cloud is unavailable, downloading through the Aspera channel is still relatively fast. Otherwise, you'll have to resort to downloading via `wget` or `axel`, which are slower methods.
 
 > [!NOTE]
-> **Note 2**: Since Aspera requires a key file, **iSeq** will **automatically search for the key** file in the `conda` environment or the `~/.aspera` directory. If the key file is not found, downloading will not be possible.
+> **Note 2**: Since `Asper`a requires a key file, **iSeq** will **automatically search for the key** file in the `conda` environment or the `~/.aspera` directory. If the key file is not found, downloading will not be possible.
 
 ### 10. `-o`, `--output`
 
 The output directory. If not exists, it will be created (default: current directory).
+
+### 11. `-s`, `--speed`
+
+Download speed limit (MB/s) (default: 1000 MB/s) for `Wget`, `AXEL` and `Aspera`.
 
 ## Output
 
