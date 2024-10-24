@@ -100,41 +100,44 @@
 
      ![e08](./img/e08.png)
 
-10.  Merge multiple FASTQ files into one FASTQ file
-
-    Merge multiple FASTQ files into one FASTQ file for `each Experiment`.
-
-    ```bash
-    iseq -i CRX020217 -e ex
-    ```
-
-    ![e09](./img/e09_1.png)
-
-    Merge multiple FASTQ files into one FASTQ file for `each Sample`.
-
-    ```bash
-    rm success.log
-    iseq -i SAMC017083 -e sa
-    ```
-
-    ![e09](./img/e09_2.png)
-
-    Merge multiple FASTQ files into one FASTQ file for `each Study`.
-
-    ```bash
-    rm success.log
-    iseq -i PRJCA000613 -e st
-    ```
-
-    ![e09](./img/e09_3.png)
+9.  Merge multiple FASTQ files into one FASTQ file
     
-11. Download sequencing data from SRA database
+    - Merge multiple FASTQ files into one FASTQ file for `each Experiment`.
+    
 
-    ```bash
-    iseq -i SRR1178105 -d sra
-    ```
+     ```bash
+     iseq -i CRX020217 -e ex
+     ```
 
-    ![e10](./img/e10.png)
+     ![e09](./img/e09_1.png)
+
+    - Merge multiple FASTQ files into one FASTQ file for `each Sample`.
+    
+
+     ```bash
+     rm success.log
+     iseq -i SAMC017083 -e sa
+     ```
+
+     ![e09](./img/e09_2.png)
+
+    - Merge multiple FASTQ files into one FASTQ file for `each Study`.
+    
+
+     ```bash
+      rm success.log
+      iseq -i PRJCA000613 -e st
+     ```
+
+     ![e09](./img/e09_3.png)
+
+9.  Download sequencing data from SRA database
+
+     ```bash
+      iseq -i SRR1178105 -d sra
+     ```
+     ![e10](./img/e10.png)
+
 
 ## Advanced examples
 
