@@ -68,8 +68,7 @@ The matching pattern for SAMC has been changed from `SAMC[A-Z]?[0-9]+` to `SAMC[
 
 ### 1. **iSeq** can be installed by conda easily
 ```{bash}
-conda create -n iseq -c conda-forge -c bioconda iseq
-conda activate iseq
+conda install bioconda::iseq
 ```
 ### 2. The latest version of iSeq can also be installed from source, see [INSTALL](https://github.com/BioOmics/iSeq/blob/main/INSTALL.md)
 ```{bash}
