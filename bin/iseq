@@ -524,7 +524,8 @@ function getGSAMetadata() {
     if [[ $accession =~ ^CRR[0-9]+$ || $accession =~ ^CRX[0-9]+$ ]]; then
         CRA=$(wget -qO-  https://ngdc.cncb.ac.cn/gsa/search?searchTerm=${accession} | grep -v "example" |  grep -oe "CRA[0-9]\+" | uniq)
         if [[ -z $CRA ]]; then
-            echo -e "\033[1;31mError\033[0m: $accession is not a valid Run accession." >&2
+            echo -e "\033[1;31mError\033[0m: Cannot infer the Project ID (CRA*) for $accession." >&2
+            echo -e "\033[1;32mHow to solve?\033[0m 1. Check your internet connection (You can try \"wget https://ngdc.cncb.ac.cn/gsa/search?searchTerm=${accession}\" for a test). 2. Check the format of $accession."
             exit 1
         fi
         wget --quiet --post-data="searchTerm=${CRA}&totalDatas=9999&downLoadCount=9999" \
