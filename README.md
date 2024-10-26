@@ -321,7 +321,7 @@ Download speed limit (MB/s) (default: 1000 MB/s) for `Wget`, `AXEL` and `Aspera`
 ## Contributing
 Contributions to **iSeq** are welcome! If you have any suggestions, bug reports, or feature requests, please open an issue on the project's GitHub repository. If you would like to contribute code, please fork the repository, make your changes, and submit a pull request.
 
-Cite us: https://doi.org/10.1101/2024.05.16.594538
+**Cite us**: [https://doi.org/10.1101/2024.05.16.594538](https://doi.org/10.1093/bioinformatics/btae641)
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
