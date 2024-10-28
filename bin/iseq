@@ -469,7 +469,11 @@ function checkSRA() {
                 echo -e "$(date)\t$SRR" >> fail.log
             fi
         else
-            local md5sum=$(md5sum ${SRR}.fastq.gz | awk '{print $1}')
+            if [[ -f "${SRR}_1.fastq.gz" ]]; then
+                local md5sum=$(md5sum "${SRR}_1.fastq.gz" | awk '{print $1}')
+            else
+                local md5sum=$(md5sum "${SRR}.fastq.gz" | awk '{print $1}')
+            fi
             if grep -q "$md5sum" ${accession}.metadata.tsv; then
                 echo -e "\033[92m${SRR} download and md5 check successful, save ${SRR} in success.log\033[0m"
                 echo -e "$(date)\t$SRR" >> success.log
