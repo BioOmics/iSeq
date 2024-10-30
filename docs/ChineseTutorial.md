@@ -1,5 +1,5 @@
 ## iSeq使用方法 
-
+- 中文纯手打，英文是由ChatGPT翻译的😀
 ```{bash}
 $ iseq --help
 
@@ -33,7 +33,7 @@ Optional options:
 
 ### 1. `-i`, `--input`
 
-输入你想下载的accession，首先获取accession的metadata，然后逐一对包含在内的Run ID进行下载。v1.1.0版本之后可以接收文件输入，每行一个accession。但是要确保这些accession来自同一个数据库，因为不同数据库使用的密钥有时候不一致会导致下载失败，尤其是在使用aspera下载数据的时候。
+输入你想下载的accession，首先获取accession的metadata，然后逐一对包含在内的Run ID进行下载。v1.1.0版本之后可以接收文件输入，每行一个accession。但是要确保这些accession来自同一个数据库，因为不同数据库使用的密钥有时候不一致会导致下载失败，尤其是在使用aspera下载数据的时候。而且这个文件最好在linux下通过vim编辑，要不然从windows上传的话可能文字编码有问题影响下载（如win通常是`CR LF`, 而Linux能识别的是`LF`格式的）。
 
 ```bash
 iseq -i PRJNA211801
@@ -125,7 +125,7 @@ iseq -i SRR1178105 -q -t 10
 iseq -i SRX003906 -g -e ex
 ```
 
-虽然大多数情况下，一个Experiment仅包含一个Run，但是有些测序数据中的Experiment中可能包含多个Run（如[SRX003906](https://www.ebi.ac.uk/ena/browser/view/SRX003906), [CRX020217](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX020217)），因此，可以通过`-e`参数将Experiment中的多个FASTQ文件合并为一个FASTQ文件。考虑到双端测序时，`fastq_1`和`fastq_2`文件需要同时合并且对应行号的序列名需要保持一致，因此，iSeq会按照相同的顺序合并多个FASTQ文件。最终，对于单端测序数据会生成一个文件：`SRX*.fastq.gz`，对于双端测序数据会生成两个文件：`SRX*_1.fastq.gz`和`SRX*_2.fastq.gz`。
+虽然大多数情况下，一个Experiment仅包含一个Run，但是有些测序数据中的Experiment中可能包含多个Run（如[SRX003906](https://www.ebi.ac.uk/ena/browser/view/SRX003906), [CRX020217](https://ngdc.cncb.ac.cn/gsa/search?searchTerm=CRX020217)），因此，可以通过`-e`参数将Experiment中的多个FASTQ文件合并为一个FASTQ文件。考虑到双端测序时，`fastq_1`和`fastq_2`文件需要同时合并且对应行号的序列名需要保持一致，因此，iSeq会按照相同的顺序合并多个FASTQ文件。最终，对于单端测序数据会生成一个文件：`SRX*.fastq.gz`，对于双端测序数据会生成两个文件：`SRX*_1.fastq.gz`和`SRX*_2.fastq.gz`。对于Sample (-e sa)或者Study (-e st)同理。
 
 > [!NOTE]
 > **注意1**：如果accession是Run ID，则不能使用`-e`参数，反正就是你想合并的时候，输入的accession必须大于等于要合并的那一级所需要的accession。目前，iSeq支持合并gzip压缩和未压缩的FASTQ文件，对于bam文件和tar.gz文件等暂不支持合并。
