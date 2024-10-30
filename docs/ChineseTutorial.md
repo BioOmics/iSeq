@@ -189,7 +189,9 @@ iseq -i SRR931847 -o PRJNA211801
 ### 11. `-s`, `--speed`
 
 v1.2.0之后可以选择限速下载，单位是MB/s
-
+```bash
+iseq -i SRR931847 -s 10
+```
 
 
 
