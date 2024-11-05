@@ -210,7 +210,7 @@ Specifies the number of threads to use for decompressing SRA files into FASTQ fi
 ```bash
 iseq -i SRR1178105 -q -t 10
 ```
-Considering that sequencing data files are generally large, you can specify the number of threads for decomposition using the `-t` parameter. However, more threads does not necessarily mean better performance because excessive threads can lead to **high CPU or IO loads**, especially since `fasterq-dump` consumes a considerable amount of IO, potentially impacting the execution of other tasks.
+Considering that sequencing data files are generally large, you can specify the number of threads for decomposition using the `-t` parameter. However, more threads does not necessarily mean better performance because excessive threads can lead to **high CPU or IO loads**, especially since `fasterq-dump` consumes a considerable amount of IO, potentially impacting the execution of other tasks. Based on the [benchmark evaluation](https://github.com/BioOmics/iSeq/blob/main/docs/img/benchmark.png), we recommend a maximum thread count of 15.
 
 ### 6. `-e`, `--merge`
 
