@@ -16,11 +16,18 @@
 > To use iSeq, Your system must be **connected to the network** and **support FTP, HTTP, and HTTPS protocols**.
 
 ## Update Notes:
+### 2024.11.21
+-  **Dependency update for aspera-cli**:
+The version requirement for aspera-cli has been updated from `aspera-cli` to `aspera-cli=4.14.0`.
+
 ### 2024.10.23
 - **New `-s`, `--speed` option** to set the download speed limit (MB/s) (default: 1000 MB/s). Such as `iseq -i SRR7706354 -s 10`
 -  **Dependency update for sra-tools**:
 The version requirement for sra-tools has been updated from `sra-tools=2.11` to `sra-tools>=2.11.0`.
 
+<details>
+<summary>More Updates</summary>
+	
 ### 2024.09.14
 -  **New `-e` option for merging FASTQ files**:
 Added a `-e` option to merge multiple FASTQ files into a single file for each `Experiment (-e ex)`, `Sample (-e sa)`, or `Study (-e st)`.
@@ -31,8 +38,7 @@ Added a `-e` option to merge multiple FASTQ files into a single file for each `E
 -  **API change for GSA metadata download**:
 The API endpoint has been updated from `getRunInfo` to `getRunInfoByCra` for downloading GSA metadata.
 
-<details>
-<summary>More Updates</summary>
+
 	
 -  **Save result to personal directory**:
 The output results will now be saved in the user's personal directory by `-o` option.
