@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2024-11-21
+# Last modified: 2024-12-16
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -98,7 +98,7 @@ while [[ $# -gt 0 ]]; do
     -a|--aspera) aspera=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.3.0"; exit 0 ;;
+    -v|--version) echo "Version 1.4.0"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -383,7 +383,8 @@ function downloadSRA() {
     if [[ $gzip -eq 1 && ! -z $FASTQLink && ! $database =~ ^[sS][rR][aA]$ && $fastq -eq 0 ]]; then 
         echo -e "\033[32mNote\033[0m: -g used, download FASTQ files in gzip format directly"
         local layout=$(grep "$SRR" $accession.metadata.tsv | awk '{if($0~"PAIRED"){print "paired"}else{print "single"}}' | uniq)
-        if [[ $layout == "single" ]]; then
+        local linkNum=$(echo $FASTQLink | tr ";" "\n" | wc -l) # even single-end data may have multiple links, such as SRR18030918
+        if [[ $layout == "single" && $linkNum -eq 1 ]]; then
             local link=$(echo $FASTQLink | tr ";" "\n" | grep "fastq.gz")
             if [[ $aspera -eq 1 ]]; then
                 echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
@@ -393,6 +394,9 @@ function downloadSRA() {
                 executeDownload "ftp://$link" $(basename $link)
             fi
         else
+            if [[ $layout == "single" ]]; then
+                echo -e "\033[93mNote\033[0m: $SRR is single-end data, but has multiple links"
+            fi
             local link1=$(echo $FASTQLink | tr ";" "\n" | grep "_1.fastq.gz")
             local link2=$(echo $FASTQLink | tr ";" "\n" | grep "_2.fastq.gz")
             if [[ $aspera -eq 1 ]]; then
@@ -884,7 +888,13 @@ for accession in ${accessions[@]}; do
                     checkSRA $SRR
                 else
                     downloadSRA $SRR
-                    checkSRA $SRR
+                    if [[ $? -eq 0 ]];then
+                        checkSRA $SRR
+                    else
+                        echo -e "\033[91m${SRR} download failed, save Run ID in fail.log\033[0m"
+                        echo -e "$(date)\t$SRR" >> fail.log
+                        exit 1
+                    fi
                 fi
 
                 SRX=$(grep $SRR $accession.metadata.tsv | grep -oe "[EDS]RX[0-9]\+" | sort | uniq)
