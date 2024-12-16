@@ -17,7 +17,7 @@
 
 ## Update Notes:
 ### 2024.12.16
-- Fixed the bugs mentioned in #16 and #17.
+- Fixed the bugs mentioned in [#16](https://github.com/BioOmics/iSeq/issues/16) and [#17](https://github.com/BioOmics/iSeq/issues/17).
 
 ### 2024.11.21
 -  **Dependency update for aspera-cli**:
