@@ -16,6 +16,9 @@
 > To use iSeq, Your system must be **connected to the network** and **support FTP, HTTP, and HTTPS protocols**.
 
 ## Update Notes:
+### 2024.12.16
+- Fixed the bugs mentioned in #16 and #17.
+
 ### 2024.11.21
 -  **Dependency update for aspera-cli**:
 The version requirement for aspera-cli has been updated from `aspera-cli` to `aspera-cli=4.14.0`.
