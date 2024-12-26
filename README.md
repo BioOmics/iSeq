@@ -16,8 +16,8 @@
 > To use iSeq, Your system must be **connected to the network** and **support FTP, HTTP, and HTTPS protocols**.
 
 ## Update Notes:
-### 2024.12.16
-- Fixed the bugs mentioned in [#16](https://github.com/BioOmics/iSeq/issues/16) and [#17](https://github.com/BioOmics/iSeq/issues/17).
+### 2024.12.26
+- Fixed the bugs mentioned in [#16](https://github.com/BioOmics/iSeq/issues/16), [#17](https://github.com/BioOmics/iSeq/issues/17) (2024.12.16) and https://github.com/BioOmics/iSeq/issues/19 (2024.12.26).
 
 ### 2024.11.21
 -  **Dependency update for aspera-cli**:
