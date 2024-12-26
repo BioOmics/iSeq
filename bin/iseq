@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2024-12-16
+# Last modified: 2024-12-26
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -18,9 +18,9 @@ function CheckSoftware(){
 CheckSoftware wget wget
 CheckSoftware axel axel
 CheckSoftware pigz pigz
-CheckSoftware ascp aspera-cli=4.14.0
+CheckSoftware ascp "aspera-cli=4.14.0"
 CheckSoftware md5sum coreutils
-CheckSoftware srapath sra-tools>=2.11.0
+CheckSoftware srapath "sra-tools>=2.11.0"
 CheckSoftware vdb-validate sra-tools
 # =======================================
 
@@ -98,7 +98,7 @@ while [[ $# -gt 0 ]]; do
     -a|--aspera) aspera=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.4.0"; exit 0 ;;
+    -v|--version) echo "Version 1.5.0"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
