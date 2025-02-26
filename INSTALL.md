@@ -15,7 +15,7 @@ Anyway, as long as you install the following dependencies and **add them to the 
 - [pigz](https://github.com/madler/pigz) (>=2.8), compressing FASTQ files into gzip format by multiple threads
 - [wget](https://www.gnu.org/software/wget/) (>=1.16), downloading files by ftp or http
 - [axel](https://github.com/axel-download-accelerator/axel) (>=2.17), downloading files by multiple threads
-- [aspera](https://github.com/IBM/aspera-cli) (>=4.4.2.550), downloading files by Aspera
+- [aspera](https://github.com/IBM/aspera-cli) (=4.4.0), downloading files by Aspera
 - [sra-tools](https://github.com/ncbi/sra-tools) (>=2.11.0), fetching SRA download links
 
 ```{bash}
