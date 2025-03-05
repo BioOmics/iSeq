@@ -40,7 +40,7 @@ iseq --version
 > # Including the 'srapath'. you can install SRA Toolkit and then change the path below to your own.
 > ln -sf ~/YourPathway/sratoolkit/bin/srapath $(which srapath)
 
-## Here is a tutorial on how to install dependencies from source 
+## How to install dependencies from source on Linux/macOS
 
 ### 1. pigz
 
@@ -69,7 +69,13 @@ sudo apt install pigz
 sudo yum install pigz
 ```
 
-### 2. wget 
+- brew install for macOS (non-Root)
+
+```bash
+brew install pigz
+```
+
+### 2. wget
 
 **`wget` is generally included in most Linux distributions and does not need to be installed by ourselves**
 
@@ -98,6 +104,12 @@ sudo apt install wget
 
 ```bash
 sudo yum install wget
+```
+
+- brew install for macOS (non-Root)
+
+```bash
+brew install wget
 ```
 
 ### 3. axel
@@ -129,6 +141,12 @@ sudo apt install axel
 sudo yum install axel
 ```
 
+- brew install for macOS (non-Root)
+
+```bash
+brew install axel
+```
+
 ### 4. aspera
 
 - Source install (only support non-Root)
@@ -142,6 +160,18 @@ echo 'export PATH=$PATH:~/.aspera/connect/bin' >> ~/.bashrc
 source ~/.bashrc
 # Check sotfware version
 ascp --version | awk 'NR==2{print $3}'
+```
+
+- brew & ruby install for macOS (non-Root)
+
+```bash
+brew install ruby
+export PATH="$HOMEBREW_PREFIX/opt/ruby/bin:$PATH"
+gem install aspera-cli
+export PATH="$HOMEBREW_PREFIX/lib/ruby/gems/3.4.0/bin:$PATH"
+ascli config ascp install
+mkdir -p $HOME/.local/bin
+cp $HOME/.aspera/sdk/ascp $HOME/.local/bin
 ```
 
 ### 5. sra-tools
@@ -160,27 +190,14 @@ source ~/.bashrc
 srapath --version | awk 'NR==2{print $3}'
 ```
 
+- brew install for macOS (non-Root)
+
+```bash
+brew install sratoolkit
+```
+
 ## Check iSeq version finally
 
 ```bash
 iseq --version
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
