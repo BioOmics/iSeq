@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2024-12-26
+# Last modified: 2025-03-11
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -43,7 +43,7 @@ Accepted accession formats:
 
 Required option:
   -i, --input     [text|file]   Single accession or a file containing multiple accessions.
-                                Note: Only one accession per line in the file, all accessions must be from the same database.
+                                Note: Only one accession per line in the file.
 
 Optional options:
   -m, --metadata                Skip the sequencing data downloads and only fetch the metadata for the accession.
@@ -98,7 +98,7 @@ while [[ $# -gt 0 ]]; do
     -a|--aspera) aspera=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.5.0"; exit 0 ;;
+    -v|--version) echo "Version 1.6.0"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -310,9 +310,35 @@ function executeAspera(){
     local link=$1
     local DB=$2
     if [[ $DB == "ENA" ]]; then
+        ascpPath=$(command -v ascp)
+        ascpKeyFile1=$(dirname $ascpPath)/../etc/aspera/aspera_bypass_rsa.pem
+        ascpKeyFile2=$(dirname $ascpPath)/../etc/aspera_tokenauth_id_rsa
+        if [[ -f $ascpKeyFile1 ]]; then
+            ascpKeyFile=$ascpKeyFile1
+        elif [[ -f $ascpKeyFile2 ]]; then
+            ascpKeyFile=$ascpKeyFile2
+        else
+            echo -e "\033[1;31mError\033[0m: Aspera key file not found in the path: \033[1;31m$ascpKeyFile1\033[0m OR \033[1;31m$ascpKeyFile2\033[0m"
+            echo -e "\033[1;32mHow to solve?\033[0m Please copy the Aspera key file in the above path and rename it"
+            exit 1
+        fi
+
         local asperaLink=$(echo $link | sed 's/ftp.sra.ebi.ac.uk\//era-fasp@fasp.sra.ebi.ac.uk:/g')
+
     elif [[ $DB == "GSA" ]]; then
+        if [[ ! -f .asperaGSA.openssh ]]; then
+            wget https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh -O .asperaGSA.openssh --quiet
+        fi
+
+        if [[ ! -f ".asperaGSA.openssh" ]]; then
+            echo -e "\033[1;31mError\033[0m: .asperaGSA.openssh is not exist"
+            echo -e "\033[1;32mHow to solve?\033[0m Please download GSA Aspera key file from https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh and rename it to .asperaGSA.openssh"
+            exit 1
+        fi
+        ascpKeyFile=.asperaGSA.openssh
+
         local asperaLink=$(echo $link | sed 's/ftp:\/\/download.big.ac.cn\//aspera01@download.cncb.ac.cn:/g')
+
     fi
     ascp -P 33001 -i $ascpKeyFile -QT -l 1000m -k1 -d $asperaLink .
 }
@@ -637,27 +663,26 @@ function checkGSA() {
     if ! command -v md5sum >/dev/null 2>&1 || [[ ! -s $CRA.md5sum.txt ]]; then
         echo -e "\033[32mNote\033[0m: Skip md5 check for $filename, as md5sum command is not available or $CRA.md5sum.txt is empty"
         CheckFile $filename
-        echo -e "\033[92m${filename} download and md5 check successful, save ${filename} in success.log\033[0m"
+        echo -e "\033[92m${filename} download successful, save ${filename} in success.log\033[0m"
         echo -e "$(date)\t$filename" >> success.log
     else
         local md5sum=$(grep "$filename" $CRA.md5sum.txt | awk '{print tolower($1)}')
-        if [[ $(md5sum $filename | awk '{print $1}') == $md5sum ]]; then
+        if [[ -f $filename && $(md5sum $filename | awk '{print $1}') == $md5sum ]]; then
             echo -e "\033[92m${filename} download and md5 check successful, save ${filename} in success.log\033[0m"
             echo -e "$(date)\t$filename" >> success.log
         elif [[ $count -le 1 ]]; then # retry times
             echo -e "\033[93mNote\033[0m: ${filename} validate failed, retry ${count} times"
             count=$((count+1))
             downloadGSA $CRR
-            checkGSA $filename
         elif [[ $count -le 2 ]]; then # retry times
             echo -e "\033[93mNote\033[0m: ${filename} validate failed, remove the file and retry ${count} times"
             rm -f $filename
             count=$((count+1))
             downloadGSA $CRR
-            checkGSA $filename
         else
             echo -e "\033[91m${filename} md5 check failed after trying ${count} times, save ${filename} in fail.log\033[0m"
             echo -e "$(date)\t$filename" >> fail.log
+            exit 1
         fi
     fi
 }
@@ -845,6 +870,7 @@ for accession in ${accessions[@]}; do
                     echo -e "\033[32mNote\033[0m: ${CRR} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$CRR/d' success.log)"
                 else
                     downloadGSA $CRR
+
                 fi
             done
             rm -f $CRA.md5sum.txt
