@@ -16,6 +16,14 @@
 > To use iSeq, Your system must be **connected to the network** and **support FTP, HTTP, and HTTPS protocols**.
 
 ## Update Notes:
+### 2025.03.11
+- Input file can contain accessions from different databases.
+- `-p` and `-a` can be used simultaneously , with `-a` taking priority.
+- Fixed some bugs when retrying download data from GSA.
+
+<details>
+<summary>More Updates</summary>
+	
 ### 2024.12.26
 - Fixed the bugs mentioned in [#16](https://github.com/BioOmics/iSeq/issues/16), [#17](https://github.com/BioOmics/iSeq/issues/17) (2024.12.16) and https://github.com/BioOmics/iSeq/issues/19 (2024.12.26).
 
@@ -28,9 +36,7 @@ The version requirement for aspera-cli has been updated from `aspera-cli` to `as
 -  **Dependency update for sra-tools**:
 The version requirement for sra-tools has been updated from `sra-tools=2.11` to `sra-tools>=2.11.0`.
 
-<details>
-<summary>More Updates</summary>
-	
+
 ### 2024.09.14
 -  **New `-e` option for merging FASTQ files**:
 Added a `-e` option to merge multiple FASTQ files into a single file for each `Experiment (-e ex)`, `Sample (-e sa)`, or `Study (-e st)`.
@@ -113,7 +119,7 @@ Usage:
 
 Required option:
   -i, --input     [text|file]   Single accession or a file containing multiple accessions.
-                                Note: Only one accession per line in the file, all accessions must be from the same database.
+                                Note: Only one accession per line in the file
 
 Optional options:
   -m, --metadata                Skip the sequencing data downloads and only fetch the metadata for the accession.
@@ -135,7 +141,7 @@ Optional options:
 
 ### 1. `-i`, `--input`
 
-Input the accession you want to download, You also can input a file containing multiple accessions (Only one accession per line in the file, all accessions must be from the same database).
+Input the accession you want to download, You also can input a file containing multiple accessions (Only one accession per line in the file).
 
 ```bash
 iseq -i PRJNA211801
