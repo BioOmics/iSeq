@@ -8,7 +8,7 @@ Usage:
 
 Required option:
   -i, --input     [text|file]   Single accession or a file containing multiple accessions.
-                                Note: Only one accession per line in the file, all accessions must be from the same database.
+                                Note: Only one accession per line in the file.
 
 Optional options:
   -m, --metadata                Skip the sequencing data downloads and only fetch the metadata for the accession.
@@ -33,7 +33,7 @@ Optional options:
 
 ### 1. `-i`, `--input`
 
-输入你想下载的accession，首先获取accession的metadata，然后逐一对包含在内的Run ID进行下载。v1.1.0版本之后可以接收文件输入，每行一个accession。但是要确保这些accession来自同一个数据库，因为不同数据库使用的密钥有时候不一致会导致下载失败，尤其是在使用aspera下载数据的时候。而且这个文件最好在linux下通过vim编辑，要不然从windows上传的话可能文字编码有问题影响下载（如win通常是`CR LF`, 而Linux能识别的是`LF`格式的）。
+输入你想下载的accession，首先获取accession的metadata，然后逐一对包含在内的Run ID进行下载。v1.1.0版本之后可以接收文件输入，每行一个accession。这个文件最好在linux下通过vim编辑，要不然从windows上传的话可能文字编码有问题影响下载（如win通常是`CR LF`, 而Linux能识别的是`LF`格式的）。
 
 ```bash
 iseq -i PRJNA211801
