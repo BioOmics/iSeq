@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2025-03-11
+# Last modified: 2025-03-14
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -98,7 +98,7 @@ while [[ $# -gt 0 ]]; do
     -a|--aspera) aspera=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.6.0"; exit 0 ;;
+    -v|--version) echo "Version 1.7.0"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -423,19 +423,32 @@ function downloadSRA() {
             if [[ $layout == "single" ]]; then
                 echo -e "\033[93mNote\033[0m: $SRR is single-end data, but has multiple links"
             fi
-            local link1=$(echo $FASTQLink | tr ";" "\n" | grep "_1.fastq.gz")
-            local link2=$(echo $FASTQLink | tr ";" "\n" | grep "_2.fastq.gz")
-            if [[ $aspera -eq 1 ]]; then
-                echo -e "File size: $(wget --spider "ftp://$link1" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
-                executeAspera "$link1" "ENA"
-                echo -e "File size: $(wget --spider "ftp://$link2" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
-                executeAspera "$link2" "ENA"
+
+            if [[ $linkNum -eq 2 ]]; then
+                local link1=$(echo $FASTQLink | tr ";" "\n" | grep "_1.fastq.gz")
+                local link2=$(echo $FASTQLink | tr ";" "\n" | grep "_2.fastq.gz")
+                if [[ $aspera -eq 1 ]]; then
+                    echo -e "File size: $(wget --spider "ftp://$link1" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
+                    executeAspera "$link1" "ENA"
+                    echo -e "File size: $(wget --spider "ftp://$link2" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
+                    executeAspera "$link2" "ENA"
+                else
+                    echo -e "File size: $(wget --spider "ftp://$link1" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
+                    executeDownload "ftp://$link1" $(basename $link1)
+                    echo -e "File size: $(wget --spider "ftp://$link2" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
+                    executeDownload "ftp://$link2" $(basename $link2)
+                fi
             else
-                echo -e "File size: $(wget --spider "ftp://$link1" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
-                executeDownload "ftp://$link1" $(basename $link1)
-                echo -e "File size: $(wget --spider "ftp://$link2" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
-                executeDownload "ftp://$link2" $(basename $link2)
-            fi
+                echo -e "\033[93mNote\033[0m: $SRR is paired-end data, but has only one link" # such as SRR23680070
+                local link=$(echo $FASTQLink | tr ";" "\n" | grep ".fastq.gz")
+                if [[ $aspera -eq 1 ]]; then
+                    echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
+                    executeAspera "$link" "ENA"
+                else
+                    echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
+                    executeDownload "ftp://$link" $(basename $link)
+                fi
+            fi  
         fi
     else
         if [[ $database =~ ^[sS][rR][aA]$ || -z $SRALink ]]; then
