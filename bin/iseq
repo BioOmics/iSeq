@@ -537,7 +537,7 @@ function checkSRA() {
             fi
         fi
     else
-        vdb-validate $SRR > $SRR.log 2>&1
+        vdb-validate ./$SRR > $SRR.log 2>&1
         if [[ $? -eq 0 ]]; then
             echo -e "\033[92m${SRR} download and md5 check successful, save ${SRR} in success.log\033[0m"
             echo -e "$(date)\t$SRR" >> success.log
