@@ -17,6 +17,9 @@
 
 ## Update Notes:
 
+### 2025.04.02
+- Fix for [#27](https://github.com/BioOmics/iSeq/issues/27): In `sra-tools` > 3.0.0, running `vdb-validate` without specifying the SRA file path causes it to re-download the file, leading to a stuck process. Specifying the path (e.g., `vdb-validate ./SRR931847`) resolves the issue.
+
 ### 2025.03.14
 - Fixed the issue mentioned in [#26](https://github.com/BioOmics/iSeq/issues/26#issuecomment-2721427208). The cause was that the data was `paired-end` but had only `one link`, such as `SRR23680070`.
 
