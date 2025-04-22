@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2025-04-02
+# Last modified: 2025-04-22
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -60,6 +60,7 @@ Optional options:
   -p, --parallel  int           Download sequencing data in parallel, the number of connections needs to be specified, such as -p 10.
                                 Note: breakpoint continuation cannot be shared between different numbers of connections.
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
+  -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
@@ -96,9 +97,10 @@ while [[ $# -gt 0 ]]; do
     -t|--threads) checkParameter $1 $2; if [[ $? -eq 0 ]]; then threads=$2;shift 2; fi ;;
     -p|--parallel) checkParameter $1 $2; if [[ $? -eq 0 ]]; then parallel=$2;shift 2; fi ;;
     -a|--aspera) aspera=1 ; shift 1 ;;
+    -s|--speed) checkParameter $1 $2; if [[ $? -eq 0 ]]; then speed=$2;shift 2; fi ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.8.0"; exit 0 ;;
+    -v|--version) echo "Version 1.9.0"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -254,6 +256,18 @@ else
     done
 fi
 
+# --------------------"-s"--------------------------
+# if not use -s, then use 1000
+if [[ -z "$speed" ]]; then
+    speed=1000
+else
+    if [[ ! $speed =~ ^[1-9][0-9]*$ ]]; then
+        echo -e "\033[1;31mError\033[0m: Invalid speed: $speed"
+        echo -e "\033[1;32mHow to solve?\033[0m Please use a positive integer for the \"-s\" option, such as \"-s 1000\" means 1000 MB/s"
+        exit 1
+    fi
+fi
+
 # --------------------"-o"--------------------------
 # if use -o, cd to output directory
 if [[ -z "$output" ]]; then
@@ -300,9 +314,10 @@ function executeDownload(){
     fi
 
     if [[ $parallel -gt 0 ]]; then
-        axel -n $parallel -o $SaveName -a -c $link
+        maxSpeed=$(awk -v speed=$speed 'BEGIN{print speed*1024*1024}')
+        axel -n $parallel -o $SaveName -a -c $link -s ${maxSpeed}
     else
-        wget -c $link -O $SaveName $wget_params
+        wget -c $link -O $SaveName $wget_params --limit-rate=${speed}M
     fi
 }
 
@@ -340,7 +355,7 @@ function executeAspera(){
         local asperaLink=$(echo $link | sed 's/ftp:\/\/download.big.ac.cn\//aspera01@download.cncb.ac.cn:/g')
 
     fi
-    ascp -P 33001 -i $ascpKeyFile -QT -l 1000m -k1 -d $asperaLink .
+    ascp -P 33001 -i $ascpKeyFile -QT -l ${speed}M -k1 -d $asperaLink .
 }
 
 function validateQuery() {
@@ -489,50 +504,47 @@ function downloadSRA() {
 count=1 
 function checkSRA() {
     local SRR=$1 # only SRR_ID
-    if [[ $gzip -eq 1 && ( -f ${SRR}_1.fastq.gz || -f ${SRR}_2.fastq.gz || -f ${SRR}.fastq.gz ) ]]; then
-        if [[ -f ${SRR}_1.fastq.gz && -f ${SRR}_2.fastq.gz ]]; then
-            local md5sum1=$(md5sum ${SRR}_1.fastq.gz | awk '{print $1}')
-            local md5sum2=$(md5sum ${SRR}_2.fastq.gz | awk '{print $1}')
-            if grep -q "$md5sum1" ${accession}.metadata.tsv && grep -q "$md5sum2" ${accession}.metadata.tsv; then
+    if [[ $gzip -eq 1 ]]; then
+        shopt -s nullglob
+        fastq_files=(${SRR}*.fastq.gz)
+        shopt -u nullglob
+
+        if [[ ${#fastq_files[@]} -gt 0 ]]; then
+            valid_md5=false
+            for file in "${fastq_files[@]}"; do
+                md5=$(md5sum "$file" | awk '{print $1}')
+                if grep -q "$md5" "${accession}.metadata.tsv"; then
+                    valid_md5=true
+                    break
+                fi
+            done
+
+            if [[ "$valid_md5" == true ]]; then
                 echo -e "\033[92m${SRR} download and md5 check successful, save ${SRR} in success.log\033[0m"
                 echo -e "$(date)\t$SRR" >> success.log
-            elif [[ $count -le 1 ]]; then # retry times
+            elif [[ $count -le 1 ]]; then
                 echo -e "\033[93mNote\033[0m: ${SRR} validate failed, retry ${count} times"
-                downloadSRA $SRR
+                downloadSRA "$SRR"
                 count=$((count+1))
-                checkSRA $SRR
-            elif [[ $count -le 2 ]]; then # retry times
-                echo -e "\033[93mNote\033[0m: ${SRR} validate failed, remove the file and retry ${count} times"
-                rm -f ${SRR}_1.fastq.gz ${SRR}_2.fastq.gz
-                downloadSRA $SRR
+                checkSRA "$SRR"
+            elif [[ $count -le 2 ]]; then
+                echo -e "\033[93mNote\033[0m: ${SRR} validate failed, remove the files and retry ${count} times"
+                rm -f "${fastq_files[@]}"
+                downloadSRA "$SRR"
                 count=$((count+1))
-                checkSRA $SRR
+                checkSRA "$SRR"
             else
                 echo -e "\033[91m${SRR} md5 check failed after trying ${count} times, save Run ID in fail.log\033[0m"
                 echo -e "$(date)\t$SRR" >> fail.log
             fi
         else
-            if [[ -f "${SRR}_1.fastq.gz" ]]; then
-                local md5sum=$(md5sum "${SRR}_1.fastq.gz" | awk '{print $1}')
-            else
-                local md5sum=$(md5sum "${SRR}.fastq.gz" | awk '{print $1}')
-            fi
-            if grep -q "$md5sum" ${accession}.metadata.tsv; then
-                echo -e "\033[92m${SRR} download and md5 check successful, save ${SRR} in success.log\033[0m"
-                echo -e "$(date)\t$SRR" >> success.log
-            elif [[ $count -le 1 ]]; then # retry times
-                echo -e "\033[93mNote\033[0m: ${SRR} validate failed, retry ${count} times"
-                downloadSRA $SRR
+            echo -e "\033[93mNote\033[0m: No matching FASTQ files found for ${SRR}"
+            if [[ $count -le 2 ]]; then
                 count=$((count+1))
-                checkSRA $SRR
-            elif [[ $count -le 2 ]]; then # retry times
-                echo -e "\033[93mNote\033[0m: ${SRR} validate failed, remove the file and retry ${count} times"
-                rm -f ${SRR}.fastq.gz
-                downloadSRA $SRR
-                count=$((count+1))
-                checkSRA $SRR
+                downloadSRA "$SRR"
+                checkSRA "$SRR"
             else
-                echo -e "\033[91m${SRR} md5 check failed after trying ${count} times, save Run ID in fail.log\033[0m"
+                echo -e "\033[91m${SRR} failed: no FASTQ files after retry, saving to fail.log\033[0m"
                 echo -e "$(date)\t$SRR" >> fail.log
             fi
         fi
@@ -862,7 +874,7 @@ function mergeGSArun(){
 
 for accession in ${accessions[@]}; do
     if [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ || $accession =~ ^CRA[0-9]+$ || $accession =~ ^CRX[0-9]+$ || $accession =~ ^CRR[0-9]+$ ]]; then
-        if [[ -f ${accession}.metadata.csv ]]; then
+        if [[ -s ${accession}.metadata.csv ]]; then
             echo -e "\033[32mNote\033[0m: ${accession}.metadata.csv exists, skip downloading metadata for $accession"
         else
             getGSAMetadata $accession
@@ -897,7 +909,7 @@ for accession in ${accessions[@]}; do
         fi
 
     else
-        if [[ -f $accession.metadata.tsv ]]; then
+        if [[ -s $accession.metadata.tsv ]]; then
             echo -e "\033[32mNote\033[0m: $accession.metadata.tsv exists, skip downloading metadata for $accession"
         else
             getSRAMetadata $accession
