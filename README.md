@@ -5,9 +5,7 @@
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/platforms.svg)](https://anaconda.org/bioconda/iseq)
 
 # [iSeq](https://github.com/BioOmics/iSeq): An [i](https://github.com/BioOmics/iSeq)ntegrated tool to fetch public [Seq](https://github.com/BioOmics/iSeq)uencing data
-**Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641
-        
-         [PMID**: [39447029](https://pubmed.ncbi.nlm.nih.gov/39447029/)]
+**Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641 [PMID: [39447029](https://pubmed.ncbi.nlm.nih.gov/39447029/)]
 ## Description
 
 **iSeq** is a Bash script that allows you to download sequencing data and metadata from **[GSA](https://ngdc.cncb.ac.cn/gsa/)**, **[SRA](https://www.ncbi.nlm.nih.gov/sra/)**, **[ENA](https://www.ebi.ac.uk/ena/)**, and **[DDBJ](https://www.ddbj.nig.ac.jp/)** databases. See [Detail Pipeline](https://github.com/BioOmics/iSeq/blob/main/docs/img/iSeq-Pipeline-Detail.png) for iSeq. Here is the basic pipeline of iSeq: 
@@ -24,14 +22,14 @@
 - Fix the exception when the metadata file is empty, mentioned in [#34](https://github.com/BioOmics/iSeq/issues/27)
 - Bug fix to resolve the issue of MD5 checksum failure when downloading ONT or HiFi third-generation sequencing gzip data.
 
+<details>
+<summary>More Updates</summary>
+
 ### 2025.04.02
 - Fixed the issue mentioned in [#27](https://github.com/BioOmics/iSeq/issues/27) and [Rednote](http://xhslink.com/a/A0TnUnKlvVg9): In `sra-tools` > 3.0.0, running `vdb-validate` without specifying the SRA file path causes it to re-download the file, leading to a stuck process. Specifying the path (e.g., `vdb-validate ./SRR931847`) resolves the issue.
 
 ### 2025.03.14
 - Fixed the issue mentioned in [#26](https://github.com/BioOmics/iSeq/issues/26#issuecomment-2721427208). The cause was that the data was `paired-end` but had only `one link`, such as `SRR23680070`.
-
-<details>
-<summary>More Updates</summary>
 
 ### 2025.03.11
 - Input file can contain accessions from different databases.
