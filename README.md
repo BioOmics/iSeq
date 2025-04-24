@@ -5,7 +5,13 @@
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/platforms.svg)](https://anaconda.org/bioconda/iseq)
 
 # [iSeq](https://github.com/BioOmics/iSeq): An [i](https://github.com/BioOmics/iSeq)ntegrated tool to fetch public [Seq](https://github.com/BioOmics/iSeq)uencing data
-**Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641 [PMID: [39447029](https://pubmed.ncbi.nlm.nih.gov/39447029/)]
+**Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641
+        
+         [PMID: 39447029
+        
+        ](https://pubmed.ncbi.nlm.nih.gov/39447029
+        
+        /)]
 ## Description
 
 **iSeq** is a Bash script that allows you to download sequencing data and metadata from **[GSA](https://ngdc.cncb.ac.cn/gsa/)**, **[SRA](https://www.ncbi.nlm.nih.gov/sra/)**, **[ENA](https://www.ebi.ac.uk/ena/)**, and **[DDBJ](https://www.ddbj.nig.ac.jp/)** databases. See [Detail Pipeline](https://github.com/BioOmics/iSeq/blob/main/docs/img/iSeq-Pipeline-Detail.png) for iSeq. Here is the basic pipeline of iSeq: 
@@ -18,7 +24,7 @@
 ## Update Notes:
 
 ### 2025.04.22
-- Fixed the issue mentioned in [#33](https://github.com/BioOmics/iSeq/issues/27). `-s`, `--speed` re-enable use.
+- Fixed the issue mentioned in [#33](https://github.com/BioOmics/iSeq/issues/33). `-s`, `--speed` re-enable use.
 - Fix the exception when the metadata file is empty, mentioned in [#34](https://github.com/BioOmics/iSeq/issues/27)
 - Bug fix to resolve the issue of MD5 checksum failure when downloading ONT or HiFi third-generation sequencing gzip data.
 
