@@ -641,7 +641,7 @@ function downloadGSA() {
         if [[ $aspera -eq 1 ]]; then 
             echo -e "\033[92mNote\033[0m: HUAWEI Cloud is available, which is faster than Aspera, so HUAWEI Cloud will be used first, even if -a option is used"
         fi
-        echo $HuaWeiLink | tr " " "\n" | while read link; do
+        for link in $HuaWeiLink; do
             local SaveName=$(basename $link)
             if [[ $(grep -c $SaveName success.log) -ge "1" ]]; then
                 echo -e "\033[32mNote\033[0m: ${SaveName} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$$SaveName/d' success.log)"
@@ -652,7 +652,7 @@ function downloadGSA() {
             fi
         done
     elif [[ $aspera -eq 1 ]]; then
-        echo $ftpLink | tr " " "\n" | while read link; do
+        for link in $ftpLink; do
             local SaveName=$(basename $link)
             if [[ $(grep -c $SaveName success.log) -ge "1" ]]; then
                 echo -e "\033[32mNote\033[0m: ${SaveName} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$$SaveName/d' success.log)"
@@ -663,7 +663,7 @@ function downloadGSA() {
             fi
         done
     else
-        echo $ftpLink | tr " " "\n" | while read link; do
+        for link in $ftpLink; do
             local SaveName=$(basename $link)
             if [[ $(grep -c $SaveName success.log) -ge "1" ]]; then
                 echo -e "\033[32mNote\033[0m: ${SaveName} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$$SaveName/d' success.log)"
@@ -888,7 +888,7 @@ for accession in ${accessions[@]}; do
                 printf "\n"}' ${accession}.metadata.csv
             echo -e "\033[32mNote\033[0m: Above Run will be downloaded. You can see the details in ${accession}.metadata.csv"
             CRA=$(grep -oe "CRA[0-9]\+" ${accession}.metadata.csv | uniq)
-            awk -F, 'NR>1{print $1}' ${accession}.metadata.csv | while read CRR; do
+            for CRR in $(awk -F, 'NR>1{print $1}' ${accession}.metadata.csv); do
                 if [[ ! -f success.log ]]; then
                     touch success.log
                 fi
@@ -896,7 +896,6 @@ for accession in ${accessions[@]}; do
                     echo -e "\033[32mNote\033[0m: ${CRR} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$CRR/d' success.log)"
                 else
                     downloadGSA $CRR
-
                 fi
             done
             rm -f $CRA.md5sum.txt
@@ -930,7 +929,7 @@ for accession in ${accessions[@]}; do
             fi
             echo -e "\033[32mNote\033[0m: Above Run will be downloaded. You can see the details in $accession.metadata.tsv"
 
-            awk -vFS="\t" 'NR>1 {print $1}' $accession.metadata.tsv | while read SRR; do
+            for SRR in $(awk -vFS="\t" 'NR>1 {print $1}' $accession.metadata.tsv); do
                 if [[ ! -f success.log ]]; then
                     touch success.log
                 fi
