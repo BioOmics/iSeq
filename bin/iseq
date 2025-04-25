@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2025-04-22
+# Last modified: 2025-04-25
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -100,7 +100,7 @@ while [[ $# -gt 0 ]]; do
     -s|--speed) checkParameter $1 $2; if [[ $? -eq 0 ]]; then speed=$2;shift 2; fi ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.9.0"; exit 0 ;;
+    -v|--version) echo "Version 1.9.1"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -939,13 +939,7 @@ for accession in ${accessions[@]}; do
                     checkSRA $SRR
                 else
                     downloadSRA $SRR
-                    if [[ $? -eq 0 ]];then
-                        checkSRA $SRR
-                    else
-                        echo -e "\033[91m${SRR} download failed, save Run ID in fail.log\033[0m"
-                        echo -e "$(date)\t$SRR" >> fail.log
-                        exit 1
-                    fi
+                    checkSRA $SRR
                 fi
 
                 SRX=$(grep $SRR $accession.metadata.tsv | grep -oe "[EDS]RX[0-9]\+" | sort | uniq)
