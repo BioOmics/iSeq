@@ -17,6 +17,14 @@
 
 ## Update Notes:
 
+### 2025.05.23
+- Fixed the issue mentioned in [#39](https://github.com/BioOmics/iSeq/issues/39). The problem was that using both `-d sra` and `-g` together would skip the MD5 check in `vdb-validate`.
+- **New `-k`, `--skip-md5` option**: Added this option to disable MD5 checks.
+
+
+<details>
+<summary>More Updates</summary>
+
 ### 2025.04.25
 - Fixed a bug that occurred when re-downloading with empty metadata.  
 - Fixed a bug where the while loop exited abnormally with a non-zero exit code.  
@@ -25,9 +33,6 @@
 - Fixed the issue mentioned in [#33](https://github.com/BioOmics/iSeq/issues/33). `-s`, `--speed` re-enable use.
 - Fix the exception when the metadata file is empty, mentioned in [#34](https://github.com/BioOmics/iSeq/issues/34)
 - Bug fix to resolve the issue of MD5 checksum failure when downloading ONT or HiFi third-generation sequencing gzip data.
-
-<details>
-<summary>More Updates</summary>
 
 ### 2025.04.02
 - Fixed the issue mentioned in [#27](https://github.com/BioOmics/iSeq/issues/27) and [Rednote](http://xhslink.com/a/A0TnUnKlvVg9): In `sra-tools` > 3.0.0, running `vdb-validate` without specifying the SRA file path causes it to re-download the file, leading to a stuck process. Specifying the path (e.g., `vdb-validate ./SRR931847`) resolves the issue.
