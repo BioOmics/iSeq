@@ -5,7 +5,13 @@
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/platforms.svg)](https://anaconda.org/bioconda/iseq)
 
 # [iSeq](https://github.com/BioOmics/iSeq): An [i](https://github.com/BioOmics/iSeq)ntegrated tool to fetch public [Seq](https://github.com/BioOmics/iSeq)uencing data
-**Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641 (PMID:[39447029](https://pubmed.ncbi.nlm.nih.gov/39447029))
+**Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641
+        
+         (PMID:39447029
+        
+        ](https://pubmed.ncbi.nlm.nih.gov/39447029
+        
+        ))
 ## Description
 
 **iSeq** is a Bash script that allows you to download sequencing data and metadata from **[GSA](https://ngdc.cncb.ac.cn/gsa/)**, **[SRA](https://www.ncbi.nlm.nih.gov/sra/)**, **[ENA](https://www.ebi.ac.uk/ena/)**, and **[DDBJ](https://www.ddbj.nig.ac.jp/)** databases. See [Detail Pipeline](https://github.com/BioOmics/iSeq/blob/main/docs/img/iSeq-Pipeline-Detail.png) for iSeq. Here is the basic pipeline of iSeq: 
@@ -318,7 +324,7 @@ The output directory. If not exists, it will be created (default: current direct
 
 Download speed limit (MB/s) (default: 1000 MB/s) for `Wget`, `AXEL` and `Aspera`.
 
-### 12 -k, --skip-md5
+### 12 `-k`, `--skip-md5`
 
 Starting from v1.9.2, you can choose to skip the MD5 file integrity check. If you want to perform the MD5 check again after skipping it, simply remove the `-k` parameter and run the same command.
 
