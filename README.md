@@ -318,6 +318,10 @@ The output directory. If not exists, it will be created (default: current direct
 
 Download speed limit (MB/s) (default: 1000 MB/s) for `Wget`, `AXEL` and `Aspera`.
 
+### 12 -k, --skip-md5
+
+Starting from v1.9.2, you can choose to skip the MD5 file integrity check. If you want to perform the MD5 check again after skipping it, simply remove the `-k` parameter and run the same command.
+
 ## Output
 
 - If the query accession in **SRA/ENA/DDBJ/GEO** database, the following files will be generated:
