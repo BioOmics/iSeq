@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2025-04-25
+# Last modified: 2025-05-23
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -61,6 +61,7 @@ Optional options:
                                 Note: breakpoint continuation cannot be shared between different numbers of connections.
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
   -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
+  -k, --skip-md5                Skip the md5 check for the downloaded files.
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
@@ -98,9 +99,10 @@ while [[ $# -gt 0 ]]; do
     -p|--parallel) checkParameter $1 $2; if [[ $? -eq 0 ]]; then parallel=$2;shift 2; fi ;;
     -a|--aspera) aspera=1 ; shift 1 ;;
     -s|--speed) checkParameter $1 $2; if [[ $? -eq 0 ]]; then speed=$2;shift 2; fi ;;
+    -k|--skip-md5) skip_md5=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.9.1"; exit 0 ;;
+    -v|--version) echo "Version 1.9.2"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -266,6 +268,12 @@ else
         echo -e "\033[1;32mHow to solve?\033[0m Please use a positive integer for the \"-s\" option, such as \"-s 1000\" means 1000 MB/s"
         exit 1
     fi
+fi
+
+# --------------------"-k"--------------------------
+# if not use -k, then use 0
+if [[ -z "$skip_md5" ]]; then
+    skip_md5=0
 fi
 
 # --------------------"-o"--------------------------
@@ -470,7 +478,7 @@ function downloadSRA() {
             if [[ $database =~ ^[eE][nN][aA]$ ]]; then
                 echo -e "\033[93mNote\033[0m: The SRA file of $SRR is not available in the ENA database, switch to the SRA database"
             fi
-            if [[ $gzip -eq 1 && $fastq -eq 0 ]]; then
+            if [[ $gzip -eq 1 && $fastq -eq 0 && ! $database =~ ^[sS][rR][aA]$ ]]; then
                 echo -e "\033[93mNote\033[0m: $SRR FASTQ file is also not available in the ENA database, switch to download SRA file"
             fi
             if [[ $gzip -eq 1 && $database =~ ^[sS][rR][aA]$ ]]; then
@@ -504,7 +512,7 @@ function downloadSRA() {
 count=1 
 function checkSRA() {
     local SRR=$1 # only SRR_ID
-    if [[ $gzip -eq 1 ]]; then
+    if [[ $gzip -eq 1 && ! $database =~ ^[sS][rR][aA]$ ]]; then
         shopt -s nullglob
         fastq_files=(${SRR}*.fastq.gz)
         shopt -u nullglob
@@ -648,7 +656,11 @@ function downloadGSA() {
             else 
                 echo -e "File size: $(wget --spider $link 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: GSA\tMode: HUAWEI Cloud"
                 executeDownload $link $SaveName
-                checkGSA $SaveName $CRR
+                if [[ $skip_md5 -eq 0 ]]; then
+                    checkGSA $SaveName $CRR
+                else
+                    echo -e "\033[32mNote\033[0m: Skip md5 check for $SaveName, as -k option is used"
+                fi
             fi
         done
     elif [[ $aspera -eq 1 ]]; then
@@ -659,7 +671,11 @@ function downloadGSA() {
             else
                 echo -e "File size: $(wget --spider $link 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: GSA\tMode: Aspera"
                 executeAspera $link "GSA"
-                checkGSA $SaveName $CRR
+                if [[ $skip_md5 -eq 0 ]]; then
+                    checkGSA $SaveName $CRR
+                else
+                    echo -e "\033[32mNote\033[0m: Skip md5 check for $SaveName, as -k option is used"
+                fi
             fi
         done
     else
@@ -670,7 +686,11 @@ function downloadGSA() {
             else
                 echo -e "File size: $(wget --spider $link 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: GSA\tMode: ftp"
                 executeDownload $link $SaveName
-                checkGSA $SaveName $CRR
+                if [[ $skip_md5 -eq 0 ]]; then
+                    checkGSA $SaveName $CRR
+                else
+                    echo -e "\033[32mNote\033[0m: Skip md5 check for $SaveName, as -k option is used"
+                fi
             fi
         done
     fi
@@ -936,10 +956,18 @@ for accession in ${accessions[@]}; do
                 if [[ $(grep -c $SRR success.log) -ge "1" ]]; then
                     echo -e "\033[32mNote\033[0m: ${SRR} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$SRR/d' success.log)"
                 elif [[ -f $SRR ]]; then
-                    checkSRA $SRR
+                    if [[ $skip_md5 -eq 0 ]]; then
+                        checkSRA $SRR
+                    else
+                        echo -e "\033[32mNote\033[0m: Skip md5 check for $SRR, as -k option is used"
+                    fi
                 else
                     downloadSRA $SRR
-                    checkSRA $SRR
+                    if [[ $skip_md5 -eq 0 ]]; then
+                        checkSRA $SRR
+                    else
+                        echo -e "\033[32mNote\033[0m: Skip md5 check for $SRR, as -k option is used"
+                    fi
                 fi
 
                 SRX=$(grep $SRR $accession.metadata.tsv | grep -oe "[EDS]RX[0-9]\+" | sort | uniq)
