@@ -157,6 +157,7 @@ Optional options:
                                 Note: breakpoint continuation cannot be shared between different numbers of connections.
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
   -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
+  -k, --skip-md5                Skip the md5 check for the downloaded files.
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
