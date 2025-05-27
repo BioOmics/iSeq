@@ -26,6 +26,7 @@ Optional options:
                                 Note: breakpoint continuation cannot be shared between different numbers of connections.
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
   -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
+  -k, --skip-md5                Skip the md5 check for the downloaded files.
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
@@ -195,7 +196,7 @@ iseq -i SRR931847 -s 10
 
 ### 12 `-k`, `--skip-md5`
 
-v1.9.2之后可以选择跳过md5文件完整性检验。当你初次跳过后想再次进行md5检验，只需要删除-k参数后，执行相同的代码就可以了。
+v1.9.2之后可以选择跳过md5文件完整性检验。当你初次跳过后, 想再次进行md5检验，只需要删除-k参数，执行相同的代码就可以了。
 
 
 
