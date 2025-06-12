@@ -121,13 +121,13 @@ fi
 # --------------------Check if input is a file or single accession--------------------------
 accessions=()
 if file "$input" | grep -q 'text'; then
+    sed -i 's/\r$//' "$input"
     while IFS= read -r line; do
         accessions+=("$line")
     done < "$input"
 else
     accessions+=("$input")
 fi
-
 
 # --------------------"-m"--------------------------
 # if not use -m, then use 0
@@ -530,6 +530,7 @@ function checkSRA() {
             if [[ "$valid_md5" == true ]]; then
                 echo -e "\033[92m${SRR} download and md5 check successful, save ${SRR} in success.log\033[0m"
                 echo -e "$(date)\t$SRR" >> success.log
+                sed -i "/$SRR/d" fail.log 2>/dev/null
             elif [[ $count -le 1 ]]; then
                 echo -e "\033[93mNote\033[0m: ${SRR} validate failed, retry ${count} times"
                 downloadSRA "$SRR"
@@ -544,7 +545,8 @@ function checkSRA() {
             else
                 echo -e "\033[91m${SRR} md5 check failed after trying ${count} times, save Run ID in fail.log\033[0m"
                 echo -e "$(date)\t$SRR" >> fail.log
-                exit 1
+                #exit 1
+                touch "$tmp_fail_flag"
             fi
         else
             echo -e "\033[93mNote\033[0m: No matching FASTQ files found for ${SRR}"
@@ -555,6 +557,7 @@ function checkSRA() {
             else
                 echo -e "\033[91m${SRR} failed: no FASTQ files after retry, saving to fail.log\033[0m"
                 echo -e "$(date)\t$SRR" >> fail.log
+                touch "$tmp_fail_flag"
             fi
         fi
     else
@@ -562,6 +565,7 @@ function checkSRA() {
         if [[ $? -eq 0 ]]; then
             echo -e "\033[92m${SRR} download and md5 check successful, save ${SRR} in success.log\033[0m"
             echo -e "$(date)\t$SRR" >> success.log
+            sed -i "/$SRR/d" fail.log 2>/dev/null
             rm -f $SRR.log
         elif [[ $count -le 1 ]]; then # retry times
             echo -e "\033[93mNote\033[0m: ${SRR} validate failed, retry ${count} times"
@@ -577,6 +581,7 @@ function checkSRA() {
         else
             echo -e "\033[91m${SRR} md5 check failed after trying ${count} times, save Run ID in fail.log\033[0m"
             echo -e "$(date)\t$SRR" >> fail.log
+            touch "$tmp_fail_flag"
         fi
     fi
 }
@@ -711,11 +716,13 @@ function checkGSA() {
         CheckFile $filename
         echo -e "\033[92m${filename} download successful, save ${filename} in success.log\033[0m"
         echo -e "$(date)\t$filename" >> success.log
+        sed -i "/$filename/d" fail.log 2>/dev/null
     else
         local md5sum=$(grep "$filename" $CRA.md5sum.txt | awk '{print tolower($1)}')
         if [[ -f $filename && $(md5sum $filename | awk '{print $1}') == $md5sum ]]; then
             echo -e "\033[92m${filename} download and md5 check successful, save ${filename} in success.log\033[0m"
             echo -e "$(date)\t$filename" >> success.log
+            sed -i "/$filename/d" fail.log 2>/dev/null
         elif [[ $count -le 1 ]]; then # retry times
             echo -e "\033[93mNote\033[0m: ${filename} validate failed, retry ${count} times"
             count=$((count+1))
@@ -728,7 +735,8 @@ function checkGSA() {
         else
             echo -e "\033[91m${filename} md5 check failed after trying ${count} times, save ${filename} in fail.log\033[0m"
             echo -e "$(date)\t$filename" >> fail.log
-            exit 1
+            #exit 1
+            touch "$tmp_fail_flag"
         fi
     fi
 }
@@ -893,6 +901,9 @@ function mergeGSArun(){
 # ==================process=========================
 # ==================================================
 
+tmp_fail_flag=".has_failed.flag"
+rm -f $tmp_fail_flag
+
 printf "%s\n" "${accessions[@]}" | while read -r accession; do
 (
     if [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ || $accession =~ ^CRA[0-9]+$ || $accession =~ ^CRX[0-9]+$ || $accession =~ ^CRR[0-9]+$ ]]; then
@@ -915,7 +926,7 @@ printf "%s\n" "${accessions[@]}" | while read -r accession; do
                     touch success.log
                 fi
             
-                # 获取当前 CRR 的所有文件名
+                # check all CRR files
                 filenames=$(awk -F, -v cr=$CRR 'NR>1 && $1==cr {
                     split($5, arr, "|");
                     for (i in arr) print arr[i];
@@ -1021,3 +1032,9 @@ printf "%s\n" "${accessions[@]}" | while read -r accession; do
     fi
 )
 done
+
+if [[ -f $tmp_fail_flag ]]; then
+    echo -e "\033[1;31mError\033[0m: Download failures detected. Please check \033[4mfail.log\033[0m for details."
+    echo -e "\033[93mNote:\033[0m You can re-run the script to retry failed items."
+    exit 1
+fi
