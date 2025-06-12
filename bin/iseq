@@ -908,16 +908,33 @@ for accession in ${accessions[@]}; do
                 printf "\n"}' ${accession}.metadata.csv
             echo -e "\033[32mNote\033[0m: Above Run will be downloaded. You can see the details in ${accession}.metadata.csv"
             CRA=$(grep -oe "CRA[0-9]\+" ${accession}.metadata.csv | uniq)
-            for CRR in $(awk -F, 'NR>1{print $1}' ${accession}.metadata.csv); do
+
+            for CRR in $(awk -F, 'NR>1{print $1}' ${accession}.metadata.csv | sort -u); do
                 if [[ ! -f success.log ]]; then
                     touch success.log
                 fi
-                if [[ $(grep -c $CRR success.log) -ge "1" ]]; then
-                    echo -e "\033[32mNote\033[0m: ${CRR} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$CRR/d' success.log)"
+            
+                # 获取当前 CRR 的所有文件名
+                filenames=$(awk -F, -v cr=$CRR 'NR>1 && $1==cr {
+                    split($5, arr, "|");
+                    for (i in arr) print arr[i];
+                }' ${accession}.metadata.csv)
+            
+                all_present=true
+                for fname in $filenames; do
+                    if ! grep -q "$fname" success.log; then
+                        all_present=false
+                        break
+                    fi
+                done
+            
+                if $all_present; then
+                    echo -e "\033[32mNote\033[0m: ${CRR} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/${CRR}/d' success.log)"
                 else
                     downloadGSA $CRR
                 fi
             done
+
             rm -f $CRA.md5sum.txt
 
             if [[ "$merge" != 0 && $? -eq 0 ]]; then
