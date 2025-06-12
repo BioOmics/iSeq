@@ -893,7 +893,8 @@ function mergeGSArun(){
 # ==================process=========================
 # ==================================================
 
-for accession in ${accessions[@]}; do
+printf "%s\n" "${accessions[@]}" | while read -r accession; do
+(
     if [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ || $accession =~ ^CRA[0-9]+$ || $accession =~ ^CRX[0-9]+$ || $accession =~ ^CRR[0-9]+$ ]]; then
         if [[ -s ${accession}.metadata.csv ]]; then
             echo -e "\033[32mNote\033[0m: ${accession}.metadata.csv exists, skip downloading metadata for $accession"
@@ -1018,4 +1019,5 @@ for accession in ${accessions[@]}; do
         equals=$(printf "%-${total_equals}s" "=")
         echo "${equals// /=}${accession} download finished${equals// /=}"
     fi
+)
 done
