@@ -764,23 +764,26 @@ function mergeSRArun(){
                     if [[ $layout == "single" ]]; then
                             echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to $experiment.fastq.gz"
                             mv ${runList}.fastq.gz ${experiment}.fastq.gz
+                            ln -s ${experiment}.fastq.gz ${runList}.fastq.gz
                     else
                         echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to ${experiment}_1.fastq.gz and ${experiment}_2.fastq.gz"
                         mv ${runList}_1.fastq.gz ${experiment}_1.fastq.gz
                         mv ${runList}_2.fastq.gz ${experiment}_2.fastq.gz
+                        ln -s ${experiment}_1.fastq.gz ${runList}_1.fastq.gz
+                        ln -s ${experiment}_2.fastq.gz ${runList}_2.fastq.gz
                     fi
                 else
                     if [[ $layout == "single" ]]; then
                         echo -e "\033[32mNote\033[0m: Those runs: \n$(for run in $runList; do echo $run.fastq.gz; done) \nwill be merged into $experiment.fastq.gz, may take a while"
                         cat $(for run in $runList; do echo $run.fastq.gz; done) > ${experiment}.fastq.gz
-                        for run in $runList; do rm -f $run.fastq.gz; done
+                        # for run in $runList; do rm -f $run.fastq.gz; done
                     else
                         echo -e "\033[32mNote\033[0m: Those runs: \n$(for run in $runList; do echo ${run}_1.fastq.gz; done) \nwill be merged into ${experiment}_1.fastq.gz, may take a while"
                         cat $(for run in $runList; do echo ${run}_1.fastq.gz; done) > ${experiment}_1.fastq.gz
                         for run in $runList; do rm -f ${run}_1.fastq.gz; done
                         echo -e "\033[32mNote\033[0m: Those runs: \n$(for run in $runList; do echo ${run}_2.fastq.gz; done) \nwill be merged into ${experiment}_2.fastq.gz, may take a while"
                         cat $(for run in $runList; do echo ${run}_2.fastq.gz; done) > ${experiment}_2.fastq.gz
-                        for run in $runList; do rm -f ${run}_2.fastq.gz; done
+                        # for run in $runList; do rm -f ${run}_2.fastq.gz; done
                     fi
                 fi
             fi
@@ -793,27 +796,31 @@ function mergeSRArun(){
                         if [[ $runList =~ _1.fastq ]]; then # maybe is a single cell data
                             echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to ${experiment}_1.fastq"
                             mv ${runList}_1.fastq ${experiment}_1.fastq
+                            ln -s ${experiment}_1.fastq ${runList}_1.fastq
                         else
                             echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to $experiment.fastq"
                             mv ${runList}.fastq ${experiment}.fastq
+                            ln -s ${experiment}.fastq ${runList}.fastq
                         fi
                     else
                         echo -e "\033[32mNote\033[0m: $experiment only has one run, rename $runList to ${experiment}_1.fastq and ${experiment}_2.fastq"
                         mv ${runList}_1.fastq ${experiment}_1.fastq
                         mv ${runList}_2.fastq ${experiment}_2.fastq
+                        ln -s ${experiment}_1.fastq.gz ${runList}_1.fastq.gz
+                        ln -s ${experiment}_2.fastq.gz ${runList}_2.fastq.gz
                     fi
                 else
                     if [[ $layout == "single" ]]; then
                         echo -e "\033[32mNote\033[0m: Those runs: \n$(for run in $runList; do echo $run.fastq; done) \nwill be merged into $experiment.fastq, may take a while"
                         cat $(for run in $runList; do echo $run.fastq; done) > ${experiment}.fastq
-                        for run in $runList; do rm -f $run.fastq; done
+                        # for run in $runList; do rm -f $run.fastq; done
                     else
                         echo -e "\033[32mNote\033[0m: Those runs: \n$(for run in $runList; do echo ${run}_1.fastq; done) \nwill be merged into ${experiment}_1.fastq, may take a while"
                         cat $(for run in $runList; do echo ${run}_1.fastq; done) > ${experiment}_1.fastq
                         for run in $runList; do rm -f ${run}_1.fastq; done
                         echo -e "\033[32mNote\033[0m: Those runs: \n$(for run in $runList; do echo ${run}_2.fastq; done) \nwill be merged into ${experiment}_2.fastq, may take a while"
                         cat $(for run in $runList; do echo ${run}_2.fastq; done) > ${experiment}_2.fastq
-                        for run in $runList; do rm -f ${run}_2.fastq; done
+                        # for run in $runList; do rm -f ${run}_2.fastq; done
                     fi
                 fi
             fi
@@ -851,6 +858,7 @@ function mergeGSArun(){
                     else
                         echo -e "\033[32mNote\033[0m: $experiment only has one run $CRR, rename $filename to ${filename/$CRR/$experiment}"
                         mv $filename ${filename/$CRR/$experiment}
+                        ln -s ${filename/$CRR/$experiment} $filename
                     fi
                 done
             else
@@ -861,6 +869,7 @@ function mergeGSArun(){
                     else
                         echo -e "\033[32mNote\033[0m: Rename $filename to ${experiment}_${filename}"
                         mv $filename ${experiment}_${filename}
+                        ln -s ${experiment}_${filename} $filename
                     fi
                 done
             fi
@@ -877,7 +886,7 @@ function mergeGSArun(){
                         else
                             echo -e "\033[32mNote\033[0m: Those files: \n$(for file in $files; do echo $file; done) \nwill be merged into ${example_file/$prefix/$experiment}, may take a while"
                             cat $(for file in $files; do echo $file; done) > ${example_file/$prefix/$experiment}
-                            for file in $files; do rm -f $file; done
+                            # for file in $files; do rm -f $file; done
                         fi
                     else
                         if [[ -f ${experiment}_${example_file} ]]; then
@@ -885,7 +894,7 @@ function mergeGSArun(){
                         else
                             echo -e "\033[32mNote\033[0m: Those files: \n$(for file in $files; do echo $file; done) \nwill be merged into ${experiment}_${example_file}, may take a while"
                             cat $(for file in $files; do echo $file; done) > ${experiment}_${example_file}
-                            for file in $files; do rm -f $file; done
+                            # for file in $files; do rm -f $file; done
                         fi
 
                     fi
