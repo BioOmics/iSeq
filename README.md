@@ -17,6 +17,12 @@
 
 ## Update Notes:
 
+### 2025.06.16
+- When using `-e`, `--merge`, create symbolic links or retain the original Run files to avoid re-downloading them after merging.  
+- Fixed the issue mentioned in [#40](https://github.com/BioOmics/iSeq/issues/40): modified the behavior so that batch downloads do not terminate upon encountering an error, and instead continue until all items are processed.  
+- Added an error message when download failures occur, such as `Download failures detected, please check fail.log for details.`  
+- Fixed a bug where incomplete downloads from GSA were incorrectly reported as successful.
+
 ### 2025.05.23
 - Fixed the issue mentioned in [#39](https://github.com/BioOmics/iSeq/issues/39). The problem was that using both `-d sra` and `-g` together would skip the MD5 check in `vdb-validate`.
 - **New `-k`, `--skip-md5` option**: Added this option to disable MD5 checks.
