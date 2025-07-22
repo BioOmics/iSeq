@@ -168,6 +168,7 @@ Optional options:
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
   -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
   -k, --skip-md5                Skip the md5 check for the downloaded files.
+  -r, --protocol  [ftp|https]   Specify the protocol only when downloading files from ENA (default: ftp).
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
@@ -332,6 +333,10 @@ Download speed limit (MB/s) (default: 1000 MB/s) for `Wget`, `AXEL` and `Aspera`
 ### 12 `-k`, `--skip-md5`
 
 Starting from v1.9.2, you can choose to skip the MD5 file integrity check. If you want to perform the MD5 check again after skipping it, simply remove the `-k` parameter and run the same command.
+
+### 13 `-r`, `--protocol`
+
+Starting from v1.9.4, you can specify the protocol only when downloading files from ENA. This is because, in some cases, HTTPS can be faster than FTP.
 
 ## Output
 
