@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2025-06-16
+# Last modified: 2025-07-22
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -62,6 +62,7 @@ Optional options:
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
   -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
   -k, --skip-md5                Skip the md5 check for the downloaded files.
+  -r, --protocol  [ftp|https]   Specify the protocol only when downloading files from ENA (default: ftp).
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
@@ -100,9 +101,10 @@ while [[ $# -gt 0 ]]; do
     -a|--aspera) aspera=1 ; shift 1 ;;
     -s|--speed) checkParameter $1 $2; if [[ $? -eq 0 ]]; then speed=$2;shift 2; fi ;;
     -k|--skip-md5) skip_md5=1 ; shift 1 ;;
+    -r|--protocol) checkParameter $1 $2; if [[ $? -eq 0 ]]; then protocol=$2;shift 2; fi ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.9.2"; exit 0 ;;
+    -v|--version) echo "Version 1.9.4"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -276,6 +278,18 @@ if [[ -z "$skip_md5" ]]; then
     skip_md5=0
 fi
 
+# --------------------"-r"--------------------------
+# if not use -r, then use ftp
+if [[ -z "$protocol" ]]; then
+    protocol="ftp"
+else
+    if ! [[ "$protocol" =~ ^(ftp|https)$ ]]; then
+        echo -e "\033[1;31mError\033[0m: Invalid protocol: $protocol"
+        echo -e "\033[1;32mHow to solve?\033[0m Please use \"ftp\" or \"https\" for the \"-r\" option"
+        exit 1
+    fi
+fi
+
 # --------------------"-o"--------------------------
 # if use -o, cd to output directory
 if [[ -z "$output" ]]; then
@@ -439,8 +453,13 @@ function downloadSRA() {
                 echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
                 executeAspera "$link" "ENA"
             else
-                echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
-                executeDownload "ftp://$link" $(basename $link)
+                if [[ $protocol == "https" ]]; then
+                    echo -e "File size: $(wget --spider "https://$link" 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: ENA\tMode: https"
+                    executeDownload "https://$link" $(basename $link)
+                else
+                    echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
+                    executeDownload "ftp://$link" $(basename $link)
+                fi
             fi
         else
             if [[ $layout == "single" ]]; then
@@ -456,10 +475,17 @@ function downloadSRA() {
                     echo -e "File size: $(wget --spider "ftp://$link2" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
                     executeAspera "$link2" "ENA"
                 else
-                    echo -e "File size: $(wget --spider "ftp://$link1" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
-                    executeDownload "ftp://$link1" $(basename $link1)
-                    echo -e "File size: $(wget --spider "ftp://$link2" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
-                    executeDownload "ftp://$link2" $(basename $link2)
+                    if [[ $protocol == "https" ]]; then
+                        echo -e "File size: $(wget --spider "https://$link1" 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: ENA\tMode: https"
+                        executeDownload "https://$link1" $(basename $link1)
+                        echo -e "File size: $(wget --spider "https://$link2" 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: ENA\tMode: https"
+                        executeDownload "https://$link2" $(basename $link2)
+                    else
+                        echo -e "File size: $(wget --spider "ftp://$link1" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
+                        executeDownload "ftp://$link1" $(basename $link1)
+                        echo -e "File size: $(wget --spider "ftp://$link2" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
+                        executeDownload "ftp://$link2" $(basename $link2)
+                    fi
                 fi
             else
                 echo -e "\033[93mNote\033[0m: $SRR is paired-end data, but has only one link" # such as SRR23680070
@@ -468,8 +494,13 @@ function downloadSRA() {
                     echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
                     executeAspera "$link" "ENA"
                 else
-                    echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
-                    executeDownload "ftp://$link" $(basename $link)
+                    if [[ $protocol == "https" ]]; then
+                        echo -e "File size: $(wget --spider "https://$link" 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: ENA\tMode: https"
+                        executeDownload "https://$link" $(basename $link)
+                    else
+                        echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
+                        executeDownload "ftp://$link" $(basename $link)
+                    fi
                 fi
             fi  
         fi
@@ -502,8 +533,13 @@ function downloadSRA() {
                 echo -e "File size: $(wget --spider "ftp://$SRALink" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
                 executeAspera "$SRALink" "ENA"
             else
-                echo -e "File size: $(wget --spider "ftp://$SRALink" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
-                executeDownload "ftp://$SRALink" $SRR
+                if [[ $protocol == "https" ]]; then
+                    echo -e "File size: $(wget --spider "https://$SRALink" 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: ENA\tMode: https"
+                    executeDownload "https://$SRALink" $SRR
+                else
+                    echo -e "File size: $(wget --spider "ftp://$SRALink" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
+                    executeDownload "ftp://$SRALink" $SRR
+                fi
             fi
         fi
     fi
