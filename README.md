@@ -6,6 +6,8 @@
 
 # [iSeq](https://github.com/BioOmics/iSeq): An [i](https://github.com/BioOmics/iSeq)ntegrated tool to fetch public [Seq](https://github.com/BioOmics/iSeq)uencing data
 **Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641
+        
+        
 ## Description
 
 **iSeq** is a Bash script that allows you to download sequencing data and metadata from **[GSA](https://ngdc.cncb.ac.cn/gsa/)**, **[SRA](https://www.ncbi.nlm.nih.gov/sra/)**, **[ENA](https://www.ebi.ac.uk/ena/)**, and **[DDBJ](https://www.ddbj.nig.ac.jp/)** databases. See [Detail Pipeline](https://github.com/BioOmics/iSeq/blob/main/docs/img/iSeq-Pipeline-Detail.png) for iSeq. Here is the basic pipeline of iSeq: 
@@ -17,19 +19,21 @@
 
 ## Update Notes:
 
+### 2025.07.22
+- **New `-r`, `--protocol` option** to specify the protocol only when downloading files from ENA.
+
 ### 2025.06.16
 - When using `-e`, `--merge`, create symbolic links or retain the original Run files to avoid re-downloading them after merging.  
 - Fixed the issue mentioned in [#40](https://github.com/BioOmics/iSeq/issues/40): modified the behavior so that batch downloads do not terminate upon encountering an error, and instead continue until all items are processed.  
 - Added an error message when download failures occur, such as `Download failures detected, please check fail.log for details.`  
 - Fixed a bug where incomplete downloads from GSA were incorrectly reported as successful.
 
+<details>
+<summary>More Updates</summary>
+
 ### 2025.05.23
 - Fixed the issue mentioned in [#39](https://github.com/BioOmics/iSeq/issues/39). The problem was that using both `-d sra` and `-g` together would skip the MD5 check in `vdb-validate`.
 - **New `-k`, `--skip-md5` option**: Added this option to disable MD5 checks.
-
-
-<details>
-<summary>More Updates</summary>
 
 ### 2025.04.25
 - Fixed a bug that occurred when re-downloading with empty metadata.  
