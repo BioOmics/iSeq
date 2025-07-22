@@ -27,6 +27,7 @@ Optional options:
   -a, --aspera                  Use Aspera to download sequencing data, only support GSA/ENA database.
   -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
   -k, --skip-md5                Skip the md5 check for the downloaded files.
+  -r, --protocol  [ftp|https]   Specify the protocol only when downloading files from ENA (default: ftp).
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
@@ -198,5 +199,8 @@ iseq -i SRR931847 -s 10
 
 v1.9.2之后可以选择跳过md5文件完整性检验。当你初次跳过后, 想再次进行md5检验，只需要删除-k参数，执行相同的代码就可以了。
 
+### 13 `-r`, `--protocol`
+
+从 v1.9.4 开始，当在 ENA 下载文件时可以指定协议。这样做是因为有时候通过 HTTPS 下载的速度会比 FTP 更快。
 
 
