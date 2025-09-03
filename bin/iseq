@@ -948,7 +948,7 @@ rm -f $tmp_fail_flag
 printf "%s\n" "${accessions[@]}" | while read -r accession; do
 (
     if [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ || $accession =~ ^CRA[0-9]+$ || $accession =~ ^CRX[0-9]+$ || $accession =~ ^CRR[0-9]+$ ]]; then
-        if [[ -s ${accession}.metadata.csv ]]; then
+        if [[ -s ${accession}.metadata.tsv ]]; then
             echo -e "\033[32mNote\033[0m: ${accession}.metadata.csv exists, skip downloading metadata for $accession"
         else
             getGSAMetadata $accession
