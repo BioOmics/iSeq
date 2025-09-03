@@ -952,7 +952,7 @@ printf "%s\n" "${accessions[@]}" | while read -r accession; do
             echo -e "\033[32mNote\033[0m: ${accession}.metadata.csv exists, skip downloading metadata for $accession"
         else
             getGSAMetadata $accession
-            CheckFile $accession.metadata.csv
+            CheckFile $accession.metadata.tsv
         fi
 
         if [[ $metadata -eq 0 ]]; then
