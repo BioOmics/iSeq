@@ -20,7 +20,7 @@
 ## Update Notes:
 
 ### 2025.09.04
-- **Update Notice**: Due to recent changes in the **ENA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest ENA API.
+- **⚠️Update Notice**: Due to recent changes in the **ENA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest ENA API.
 
 
 ### 2025.07.22
@@ -387,4 +387,5 @@ Contributions to **iSeq** are welcome! If you have any suggestions, bug reports,
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
 
