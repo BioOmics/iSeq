@@ -8,6 +8,8 @@
 **Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641
         
         
+        
+        
 ## Description
 
 **iSeq** is a Bash script that allows you to download sequencing data and metadata from **[GSA](https://ngdc.cncb.ac.cn/gsa/)**, **[SRA](https://www.ncbi.nlm.nih.gov/sra/)**, **[ENA](https://www.ebi.ac.uk/ena/)**, and **[DDBJ](https://www.ddbj.nig.ac.jp/)** databases. See [Detail Pipeline](https://github.com/BioOmics/iSeq/blob/main/docs/img/iSeq-Pipeline-Detail.png) for iSeq. Here is the basic pipeline of iSeq: 
@@ -20,7 +22,7 @@
 ## Update Notes:
 
 ### 2025.09.04
-- **⚠️Update Notice**: Due to recent changes in the **ENA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest ENA API.
+- **⚠️Update Notice**: Due to recent changes in the **ENA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest ENA API. **Everyone please update iSeq version (≥ 1.9.5)**
 
 
 ### 2025.07.22
@@ -387,5 +389,6 @@ Contributions to **iSeq** are welcome! If you have any suggestions, bug reports,
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
 
 
