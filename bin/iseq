@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2025-07-22
+# Last modified: 2025-09-04
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -104,7 +104,7 @@ while [[ $# -gt 0 ]]; do
     -r|--protocol) checkParameter $1 $2; if [[ $? -eq 0 ]]; then protocol=$2;shift 2; fi ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.9.4"; exit 0 ;;
+    -v|--version) echo "Version 1.9.5"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -383,13 +383,13 @@ function executeAspera(){
 function validateQuery() {
     local accession="$1"
     if [[ $accession =~ ^PRJ[EDN][A-Z][0-9]+$ || $accession =~ ^[EDS]RP[0-9]{6,}$ ]]; then
-        echo "(study_accession=$accession OR secondary_study_accession=$accession)"
+        echo "$accession"
     elif [[ $accession =~ ^SAM[EDN][A-Z]?[0-9]+$ || $accession =~ ^[EDS]RS[0-9]{6,}$ ]]; then
-        echo "(sample_accession=$accession OR secondary_sample_accession=$accession)"
+        echo "$accession"
     elif [[ $accession =~ ^[EDS]RX[0-9]{6,}$ ]]; then # {6,} means at least 6 digits
-        echo "experiment_accession=$accession"
+        echo "$accession"
     elif [[ $accession =~ ^[EDS]RR[0-9]{6,}$ ]]; then
-        echo "run_accession=$accession"
+        echo "$accession"
     elif [[ $accession =~ ^GSE[0-9]+$ ]]; then
         local bioproject=$(wget -qO- "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=$accession" | grep -oe "PRJ[EDN][A-Z][0-9]\+" | uniq)
         if [[ -z $bioproject ]]; then
@@ -397,7 +397,7 @@ function validateQuery() {
             exit 1
         fi
         echo -e "\033[32mNote\033[0m: $accession belongs to $bioproject" >&2
-        echo "(study_accession=$bioproject OR secondary_study_accession=$bioproject)"
+        echo "$bioproject"
     elif [[ $accession =~ ^GSM[0-9]+$ ]]; then
         local biosample=$(wget -qO- "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=$accession" | grep -oe "SAM[EDN][A-Z]\?[0-9]\+" | uniq)
         if [[ -z $biosample ]]; then
@@ -405,7 +405,7 @@ function validateQuery() {
             exit 1
         fi
         echo -e "\033[32mNote\033[0m: $accession belongs to $biosample" >&2
-        echo "(sample_accession=$biosample OR secondary_sample_accession=$biosample)"
+        echo "$biosample"
     else
         echo -e "\033[1;31mError\033[0m: $accession is not a valid Study, Sample, Experiment, or Run accession." >&2
         exit 1
@@ -418,7 +418,8 @@ function getSRAMetadata() {
     if [[ -z $query ]]; then
          exit 1
     fi
-    wget -c "https://www.ebi.ac.uk/ena/portal/api/search?result=read_run&format=tsv&query=\"$query\"&fields=all" -O $accession.metadata.tsv --quiet
+	wget -c "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=$query&result=read_run&fields=study_accession,secondary_study_accession,sample_accession,secondary_sample_accession,experiment_accession,run_accession,submission_accession,tax_id,scientific_name,instrument_platform,instrument_model,library_name,nominal_length,library_layout,library_strategy,library_source,library_selection,read_count,base_count,center_name,first_public,last_updated,experiment_title,study_title,study_alias,experiment_alias,run_alias,fastq_bytes,fastq_md5,fastq_ftp,fastq_aspera,fastq_galaxy,submitted_bytes,submitted_md5,submitted_ftp,submitted_aspera,submitted_galaxy,submitted_format,sra_bytes,sra_md5,sra_ftp,sra_aspera,sra_galaxy,sample_alias,broker_name,sample_title,nominal_sdev,first_created,bam_ftp,bam_bytes,bam_md5&format=tsv&download=true&limit=0" -O $accession.metadata.tsv --quiet
+    #wget -c "https://www.ebi.ac.uk/ena/portal/api/search?result=read_run&format=tsv&query=\"$query\"&fields=all" -O $accession.metadata.tsv --quiet
     if [[ -z $(awk -vFS="\t" 'NR==2 {print $1}' $accession.metadata.tsv) ]]; then
         echo -e "\033[93mNote\033[0m: No metadata information found for $accession in the ENA database, try to download from the SRA database"
 
@@ -1009,12 +1010,12 @@ printf "%s\n" "${accessions[@]}" | while read -r accession; do
         if [[ $metadata -eq 0 ]]; then
             FASTQLinktmp=$(grep -o 'ftp\.sra\.ebi\.ac\.uk/vol[0-9]/fastq/[^ ]*\.fastq\.gz' $accession.metadata.tsv)
             if [[ $gzip -eq 1 && ! -z $FASTQLinktmp && $fastq -eq 0 ]]; then
-                awk -v FS="\t" 'NR>1{split($92, filenames, ";"); split($31, fileSizes, ";");
+                awk -v FS="\t" 'NR>1{split($30, filenames, ";"); split($28, fileSizes, ";");
                     for (i=1; i<=length(filenames); i++) { split(filenames[i], parts, "/");file_extension = parts[length(parts)];
                         fileSize = fileSizes[i] / (1024 * 1024 * 1024);printf "      %s %.2fG \t ", file_extension, fileSize;}printf "\n"}' ${accession}.metadata.tsv
             else
-                awk -v FS="\t" 'NR>1{size8 = $8/1024;size23 = $23/1024/1024/1024;
-                    if (size8 == 0) {if ($0~"lite"){printf "      %s\t>%.2fG\n", $1, size23} else {printf "      %s\t%.2fG\n", $1, size23}} 
+                awk -v FS="\t" 'NR>1{size7 = $7/1024;size8 = $8/1024;size39 = $39/1024/1024/1024;
+                    if (size7 == 0 && size8 != 0) {if ($0~"lite"){printf "      %s\t>%.2fG\n", $1, size39} else {printf "      %s\t%.2fG\n", $1, size39}} 
                     else {printf "      %s\t%.2fG\n", $1, size8}}' $accession.metadata.tsv
             fi
             echo -e "\033[32mNote\033[0m: Above Run will be downloaded. You can see the details in $accession.metadata.tsv"
