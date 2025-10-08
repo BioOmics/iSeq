@@ -575,12 +575,14 @@ function checkSRA() {
                 sed -i "/$SRR/d" fail.log 2>/dev/null
             elif [[ $count -le 1 ]]; then
                 echo -e "\033[93mNote\033[0m: ${SRR} validate failed, retry ${count} times"
+				rm -f "$SRR" 2>/dev/null
                 downloadSRA "$SRR"
                 count=$((count+1))
                 checkSRA "$SRR"
             elif [[ $count -le 2 ]]; then
                 echo -e "\033[93mNote\033[0m: ${SRR} validate failed, remove the files and retry ${count} times"
                 rm -f "${fastq_files[@]}"
+				rm -f "$SRR" 2>/dev/null
                 downloadSRA "$SRR"
                 count=$((count+1))
                 checkSRA "$SRR"
@@ -611,6 +613,7 @@ function checkSRA() {
             rm -f $SRR.log
         elif [[ $count -le 1 ]]; then # retry times
             echo -e "\033[93mNote\033[0m: ${SRR} validate failed, retry ${count} times"
+			rm -f $SRR
             downloadSRA $SRR
             count=$((count+1))
             checkSRA $SRR
@@ -767,6 +770,7 @@ function checkGSA() {
             sed -i "/$filename/d" fail.log 2>/dev/null
         elif [[ $count -le 1 ]]; then # retry times
             echo -e "\033[93mNote\033[0m: ${filename} validate failed, retry ${count} times"
+			rm -f $filename
             count=$((count+1))
             downloadGSA $CRR
         elif [[ $count -le 2 ]]; then # retry times
