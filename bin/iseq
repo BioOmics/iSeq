@@ -549,7 +549,7 @@ function downloadSRA() {
 count=1 
 function checkSRA() {
     local SRR=$1 # only SRR_ID
-    if [[ $gzip -eq 1 && ! $database =~ ^[sS][rR][aA]$ ]]; then
+    if [[ $gzip -eq 1 && $fastq -eq 0 && ! $database =~ ^[sS][rR][aA]$ ]]; then
 
         mapfile -t fastq_files < <(grep "$SRR" "${accession}.metadata.tsv" | grep -o "${SRR}\(_[^;/[:space:]]*\)\?\.fastq\.gz")
 
