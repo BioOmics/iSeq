@@ -23,7 +23,7 @@
 
 ## Update Notes:
 
-### 2025.07.22
+### 2025.10.09
 - Fixed a bug when checking md5 of SRA files.
 
 ### 2025.09.04
@@ -393,6 +393,7 @@ Contributions to **iSeq** are welcome! If you have any suggestions, bug reports,
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
 
 
 
