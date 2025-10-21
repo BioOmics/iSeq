@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2025-10-09
+# Last modified: 2025-10-21
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -63,6 +63,7 @@ Optional options:
   -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
   -k, --skip-md5                Skip the md5 check for the downloaded files.
   -r, --protocol  [ftp|https]   Specify the protocol only when downloading files from ENA (default: ftp).
+  -Q, --quiet                   Suppress download progress bars.
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
@@ -102,9 +103,10 @@ while [[ $# -gt 0 ]]; do
     -s|--speed) checkParameter $1 $2; if [[ $? -eq 0 ]]; then speed=$2;shift 2; fi ;;
     -k|--skip-md5) skip_md5=1 ; shift 1 ;;
     -r|--protocol) checkParameter $1 $2; if [[ $? -eq 0 ]]; then protocol=$2;shift 2; fi ;;
+    -Q|--quiet) quiet=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.9.6"; exit 0 ;;
+    -v|--version) echo "Version 1.9.7"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -290,6 +292,12 @@ else
     fi
 fi
 
+# --------------------"-Q"--------------------------
+# if not use -Q, then use 0
+if [[ -z "$quiet" ]]; then
+    quiet=0
+fi
+
 # --------------------"-o"--------------------------
 # if use -o, cd to output directory
 if [[ -z "$output" ]]; then
@@ -335,11 +343,19 @@ function executeDownload(){
         local wget_params="--quiet --show-progress"
     fi
 
+    if [[ $quiet -eq 1 ]]; then
+        wget_params="--quiet"
+    fi
+
     if [[ $parallel -gt 0 ]]; then
         maxSpeed=$(awk -v speed=$speed 'BEGIN{print speed*1024*1024}')
-        axel -n $parallel -o $SaveName -a -c $link -s ${maxSpeed}
+        if [[ $quiet -eq 1 ]]; then
+            axel -n $parallel -o "$SaveName" -a -c "$link" -s ${maxSpeed} >/dev/null 2>&1
+        else
+            axel -n $parallel -o "$SaveName" -a -c "$link" -s ${maxSpeed}
+        fi
     else
-        wget -c $link -O $SaveName $wget_params --limit-rate=${speed}M
+        wget -c "$link" -O "$SaveName" $wget_params --limit-rate=${speed}M
     fi
 }
 
@@ -377,7 +393,12 @@ function executeAspera(){
         local asperaLink=$(echo $link | sed 's/ftp:\/\/download.big.ac.cn\//aspera01@download.cncb.ac.cn:/g')
 
     fi
-    ascp -P 33001 -i $ascpKeyFile -QT -l ${speed}M -k1 -d $asperaLink .
+
+    if [[ $quiet -eq 1 ]]; then
+        ascp -q -P 33001 -i "$ascpKeyFile" -QT -l "${speed}M" -k1 -d "$asperaLink" . 
+    else
+        ascp -P 33001 -i "$ascpKeyFile" -QT -l "${speed}M" -k1 -d "$asperaLink" .
+    fi
 }
 
 function validateQuery() {
@@ -422,7 +443,7 @@ function getSRAMetadata() {
     #wget -c "https://www.ebi.ac.uk/ena/portal/api/search?result=read_run&format=tsv&query=\"$query\"&fields=all" -O $accession.metadata.tsv --quiet
     if [[ -z $(awk -vFS="\t" 'NR==2 {print $1}' $accession.metadata.tsv) ]]; then
         echo -e "\033[93mNote\033[0m: No metadata information found for $accession in the ENA database, try to download from the SRA database"
-
+        database="sra"
         wget --quiet --output-document="$accession.xml" "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=sra&term=${accession}&usehistory=y"
         WebEnv=$(grep -oP '<WebEnv>\K[^<]+' $accession.xml)
         QueryKey=$(grep -oP '<QueryKey>\K[^<]+' $accession.xml)
@@ -616,11 +637,12 @@ function checkSRA() {
             checkSRA $SRR
         elif [[ $count -le 2 ]]; then # retry times
             echo -e "\033[93mNote\033[0m: ${SRR} validate failed, remove the file and retry ${count} times"
-            rm -f $SRR
+            if [[ -f "$SRR" ]]; then rm -f "$SRR"; fi
             downloadSRA $SRR
             count=$((count+1))
             checkSRA $SRR
         else
+            if [[ -f "$SRR" ]]; then rm -f "$SRR"; fi
             echo -e "\033[91m${SRR} md5 check failed after trying ${count} times, save Run ID in fail.log\033[0m"
             echo -e "$(date)\t$SRR" >> fail.log
             touch "$tmp_fail_flag"
@@ -1047,7 +1069,13 @@ printf "%s\n" "${accessions[@]}" | while read -r accession; do
                 && ! -f ${SRX}_1.fastq.gz && ! -f ${SRX}_2.fastq.gz && ! -f ${SRX}.fastq.gz ]]; then # if SRA file is not exist, means fastq files have been downloaded
                     echo -e "\033[32mNote\033[0m: Converting $SRR to fastq files using $threads threads"
                     SrrPath=$(dirname $(realpath $SRR))
-                    fasterq-dump -p -S --include-technical -e $threads -O $SrrPath $SrrPath/$SRR
+
+                    if [[ $quiet -eq 1 ]]; then
+                        fasterq-dump -p -S --include-technical -e $threads -O "$SrrPath" "$SrrPath/$SRR" > /dev/null 2>&1
+                    else
+                        fasterq-dump -p -S --include-technical -e $threads -O "$SrrPath" "$SrrPath/$SRR"
+                    fi
+                    
                     rm -rf fasterq.tmp*
                     if [[ $gzip -eq 1 && -f $SRR ]]; then
                         ls ${SRR}*fastq | while read fastq; do
