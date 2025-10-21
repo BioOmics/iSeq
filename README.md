@@ -23,6 +23,11 @@
 
 ## Update Notes:
 
+### 2025.10.21
+- **New `-Q`, `--quiet` option**: Added this option to suppress download progress bars. Useful when logging clean outputs.
+- Fixed a bug where `--database` option failed to switch when ENA was inaccessible.
+- If the MD5 check ultimately fails, delete the partially downloaded files.
+
 ### 2025.10.09
 - Fixed a bug when checking md5 of SRA files.
 
@@ -179,6 +184,7 @@ Optional options:
   -s, --speed     int           Download speed limit (MB/s) (default: 1000 MB/s).
   -k, --skip-md5                Skip the md5 check for the downloaded files.
   -r, --protocol  [ftp|https]   Specify the protocol only when downloading files from ENA (default: ftp).
+  -Q, --quiet                   Suppress download progress bars.
   -o, --output    text          The output directory. If not exists, it will be created (default: current directory).
   -h, --help                    Show the help information.
   -v, --version                 Show the script version.
@@ -348,6 +354,10 @@ Starting from v1.9.2, you can choose to skip the MD5 file integrity check. If yo
 
 Starting from v1.9.4, you can specify the protocol only when downloading files from ENA. This is because, in some cases, HTTPS can be faster than FTP.
 
+### 14 `-Q`, `--quiet`
+
+Starting from v1.9.7, you can use the `-Q` or `--quiet` option to suppress download progress bars and non-essential messages from all download and conversion tools (wget, axel, ascp, fasterq-dump), making batch processing or logging cleaner.
+
 ## Output
 
 - If the query accession in **SRA/ENA/DDBJ/GEO** database, the following files will be generated:
@@ -393,6 +403,7 @@ Contributions to **iSeq** are welcome! If you have any suggestions, bug reports,
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
 
 
 
