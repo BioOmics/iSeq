@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2025-10-21
+# Last modified: 2025-11-20
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -106,7 +106,7 @@ while [[ $# -gt 0 ]]; do
     -Q|--quiet) quiet=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.9.7"; exit 0 ;;
+    -v|--version) echo "Version 1.9.8"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -234,7 +234,7 @@ else
     for accession in ${accessions[@]}; do
         if [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ || $accession =~ ^CRA[0-9]+$ || $accession =~ ^CRX[0-9]+$ || $accession =~ ^CRR[0-9]+$ ]]; then
             if [[ ! -f .asperaGSA.openssh ]]; then
-                wget https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh -O .asperaGSA.openssh --quiet
+                wget --user-agent="Mozilla/5.0" https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh -O .asperaGSA.openssh --quiet
             fi
 
             if [[ ! -f ".asperaGSA.openssh" ]]; then
@@ -380,7 +380,7 @@ function executeAspera(){
 
     elif [[ $DB == "GSA" ]]; then
         if [[ ! -f .asperaGSA.openssh ]]; then
-            wget https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh -O .asperaGSA.openssh --quiet
+            wget --user-agent="Mozilla/5.0" https://ngdc.cncb.ac.cn/gsa/file/downFile?fileName=download/aspera01.openssh -O .asperaGSA.openssh --quiet
         fi
 
         if [[ ! -f ".asperaGSA.openssh" ]]; then
@@ -606,6 +606,9 @@ function checkSRA() {
                 count=$((count+1))
                 checkSRA "$SRR"
             else
+				for f in "${fastq_files[@]}"; do
+					[[ -f "$f" ]] && rm -f "$f"
+				done
                 echo -e "\033[91m${SRR} md5 check failed after trying ${count} times, save Run ID in fail.log\033[0m"
                 echo -e "$(date)\t$SRR" >> fail.log
                 #exit 1
@@ -618,6 +621,9 @@ function checkSRA() {
                 downloadSRA "$SRR"
                 checkSRA "$SRR"
             else
+				for f in "${fastq_files[@]}"; do
+					[[ -f "$f" ]] && rm -f "$f"
+				done
                 echo -e "\033[91m${SRR} failed: no FASTQ files after retry, saving to fail.log\033[0m"
                 echo -e "$(date)\t$SRR" >> fail.log
                 touch "$tmp_fail_flag"
@@ -653,19 +659,21 @@ function checkSRA() {
 function getGSAxlsx(){
     local cra=$1
     wget --quiet --post-data="type=3&dlAcession=${cra}" \
+    --user-agent="Mozilla/5.0" \
     --output-document="${cra}.metadata.xlsx" "https://ngdc.cncb.ac.cn/gsa/file/exportExcelFile"
 }
 
 function getGSAMetadata() {
     local accession=$1
     if [[ $accession =~ ^CRR[0-9]+$ || $accession =~ ^CRX[0-9]+$ ]]; then
-        CRA=$(wget -qO-  https://ngdc.cncb.ac.cn/gsa/search?searchTerm=${accession} | grep -v "example" |  grep -oe "CRA[0-9]\+" | uniq)
+        CRA=$(wget --user-agent="Mozilla/5.0" -qO-  https://ngdc.cncb.ac.cn/gsa/search?searchTerm=${accession} | grep -v "example" |  grep -oe "CRA[0-9]\+" | uniq)
         if [[ -z $CRA ]]; then
             echo -e "\033[1;31mError\033[0m: Cannot infer the Project ID (CRA*) for $accession." >&2
             echo -e "\033[1;32mHow to solve?\033[0m 1. Check your internet connection (You can try \"wget https://ngdc.cncb.ac.cn/gsa/search?searchTerm=${accession}\" for a test). 2. Check the format of $accession."
             exit 1
         fi
         wget --quiet --post-data="searchTerm=${CRA}&totalDatas=9999&downLoadCount=9999" \
+                --user-agent="Mozilla/5.0" \
                 --output-document="${accession}.tmp" "https://ngdc.cncb.ac.cn/gsa/search/getRunInfoByCra"
         awk -vaccession=${accession} 'NR==1{print $0}NR>1{if($0~accession)print $0}' ${accession}.tmp > ${accession}.metadata.csv
         rm ${accession}.tmp
@@ -677,9 +685,11 @@ function getGSAMetadata() {
     elif [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ || $accession =~ ^CRA[0-9]+$ ]]; then
         if [[ $accession =~ ^PRJC[A-Z][0-9]+$ || $accession =~ ^SAMC[0-9]+$ ]]; then
             wget --quiet --post-data="searchTerm=%26quot%3B${accession}%26quot%3BtotalDatas=9999%3BdownLoadCount=9999" \
+            --user-agent="Mozilla/5.0" \
             --output-document="${accession}.metadata.csv" "https://ngdc.cncb.ac.cn/gsa/search/getRunInfo"
         elif [[ $accession =~ ^CRA[0-9]+$ ]]; then
             wget --quiet --post-data="searchTerm=${accession}&totalDatas=9999&downLoadCount=9999" \
+            --user-agent="Mozilla/5.0" \
             --output-document="${accession}.metadata.csv" "https://ngdc.cncb.ac.cn/gsa/search/getRunInfoByCra"
         fi
 
@@ -709,7 +719,7 @@ function getGSAMetadata() {
 function downloadGSA() {
     local CRR=$1 # only CRR_ID
     local CRA=$(grep "$CRR" ${accession}.metadata.csv | grep -o "CRA[0-9]\+" | uniq)
-    local allLinks=$(wget -qO- https://ngdc.cncb.ac.cn/gsa/browse/${CRA}/${CRR} | grep -oE '(https|ftp)://[^"]*\.(gz|bam|tar|bz2)' | sort | uniq)
+    local allLinks=$(wget -qO- --user-agent="Mozilla/5.0" https://ngdc.cncb.ac.cn/gsa/browse/${CRA}/${CRR} | grep -oE '(https|ftp)://[^"]*\.(gz|bam|tar|bz2)' | sort | uniq)
     local httpsLink=$(echo $allLinks | tr " " "\n" | grep "https://download.cncb.ac.cn")
     local ftpLink=$(echo $allLinks | tr " " "\n" | grep "ftp://download.big.ac.cn")
     local HuaWeiLink=$(echo $allLinks | tr " " "\n" | grep "huaweicloud")
@@ -723,7 +733,7 @@ function downloadGSA() {
             if [[ $(grep -c $SaveName success.log) -ge "1" ]]; then
                 echo -e "\033[32mNote\033[0m: ${SaveName} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$$SaveName/d' success.log)"
             else 
-                echo -e "File size: $(wget --spider $link 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: GSA\tMode: HUAWEI Cloud"
+                echo -e "File size: $(wget --user-agent="Mozilla/5.0" --spider $link 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: GSA\tMode: HUAWEI Cloud"
                 executeDownload $link $SaveName
                 if [[ $skip_md5 -eq 0 ]]; then
                     checkGSA $SaveName $CRR
@@ -738,7 +748,7 @@ function downloadGSA() {
             if [[ $(grep -c $SaveName success.log) -ge "1" ]]; then
                 echo -e "\033[32mNote\033[0m: ${SaveName} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$$SaveName/d' success.log)"
             else
-                echo -e "File size: $(wget --spider $link 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: GSA\tMode: Aspera"
+                echo -e "File size: $(wget --user-agent="Mozilla/5.0" --spider $link 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: GSA\tMode: Aspera"
                 executeAspera $link "GSA"
                 if [[ $skip_md5 -eq 0 ]]; then
                     checkGSA $SaveName $CRR
@@ -753,7 +763,7 @@ function downloadGSA() {
             if [[ $(grep -c $SaveName success.log) -ge "1" ]]; then
                 echo -e "\033[32mNote\033[0m: ${SaveName} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$$SaveName/d' success.log)"
             else
-                echo -e "File size: $(wget --spider $link 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: GSA\tMode: ftp"
+                echo -e "File size: $(wget --user-agent="Mozilla/5.0" --spider $link 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: GSA\tMode: ftp"
                 executeDownload $link $SaveName
                 if [[ $skip_md5 -eq 0 ]]; then
                     checkGSA $SaveName $CRR
@@ -772,7 +782,7 @@ function checkGSA() {
 
     if [[ ! -f $CRA.md5sum.txt ]]; then
         md5URL=$(echo "https://download.cncb.ac.cn/"$(grep -oe "gsa[0-9]\+/$CRA\|gsa/$CRA" ${accession}.metadata.csv | uniq)"/md5sum.txt")
-        wget "$md5URL" -O $CRA.md5sum.txt --quiet
+        wget --user-agent="Mozilla/5.0" "$md5URL" -O $CRA.md5sum.txt --quiet
     fi
 
     if ! command -v md5sum >/dev/null 2>&1 || [[ ! -s $CRA.md5sum.txt ]]; then
