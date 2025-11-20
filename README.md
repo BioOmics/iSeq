@@ -23,6 +23,9 @@
 
 ## Update Notes:
 
+### 2025.11.20
+- **⚠️Update Notice**: Due to recent changes in the **GSA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest GSA API. **Everyone please update iSeq version (≥ 1.9.8)**
+
 ### 2025.10.21
 - **New `-Q`, `--quiet` option**: Added this option to suppress download progress bars. Useful when logging clean outputs.
 - Fixed a bug where `--database` option failed to switch when ENA was inaccessible.
@@ -403,6 +406,7 @@ Contributions to **iSeq** are welcome! If you have any suggestions, bug reports,
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
 
 
 
