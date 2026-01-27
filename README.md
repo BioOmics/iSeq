@@ -12,6 +12,8 @@
         
         
         
+        
+        
 ## Description
 
 **iSeq** is a Bash script that allows you to download sequencing data and metadata from **[GSA](https://ngdc.cncb.ac.cn/gsa/)**, **[SRA](https://www.ncbi.nlm.nih.gov/sra/)**, **[ENA](https://www.ebi.ac.uk/ena/)**, and **[DDBJ](https://www.ddbj.nig.ac.jp/)** databases. See [Detail Pipeline](https://github.com/BioOmics/iSeq/blob/main/docs/img/iSeq-Pipeline-Detail.png) for iSeq. Here is the basic pipeline of iSeq: 
@@ -26,6 +28,9 @@
 ### 2025.11.20
 - **⚠️Update Notice**: Due to recent changes in the **GSA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest GSA API. **Everyone please update iSeq version (≥ 1.9.8)**
 
+<details>
+<summary>More Updates</summary>
+
 ### 2025.10.21
 - **New `-Q`, `--quiet` option**: Added this option to suppress download progress bars. Useful when logging clean outputs.
 - Fixed a bug where `--database` option failed to switch when ENA was inaccessible.
@@ -36,9 +41,6 @@
 
 ### 2025.09.04
 - **⚠️Update Notice**: Due to recent changes in the **ENA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest ENA API. **Everyone please update iSeq version (≥ 1.9.5)**
-
-<details>
-<summary>More Updates</summary>
 
 ### 2025.07.22
 - **New `-r`, `--protocol` option** to specify the protocol only when downloading files from ENA.
@@ -406,6 +408,7 @@ Contributions to **iSeq** are welcome! If you have any suggestions, bug reports,
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
 
 
 
