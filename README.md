@@ -3,7 +3,7 @@
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/latest_release_date.svg)](https://anaconda.org/bioconda/iseq)
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/license.svg)](https://anaconda.org/bioconda/iseq)
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/iseq/badges/platforms.svg)](https://anaconda.org/bioconda/iseq)
-[![GitHub Downloads](https://img.shields.io/github/downloads/BioOmics/iSeq/total.svg?style=social&logo=github&label=Download)]([https://github.com/BioOmics/iSeq/releases](https://github.com/BioOmics/iSeq/releases))
+[![GitHub Downloads](https://img.shields.io/github/downloads/BioOmics/iSeq/total.svg?style=social&logo=github&label=Download)](https://github.com/BioOmics/iSeq/releases)
 
 # [iSeq](https://github.com/BioOmics/iSeq): An [i](https://github.com/BioOmics/iSeq)ntegrated tool to fetch public [Seq](https://github.com/BioOmics/iSeq)uencing data
 **Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641
@@ -413,6 +413,7 @@ Contributions to **iSeq** are welcome! If you have any suggestions, bug reports,
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
+
 
 
 
