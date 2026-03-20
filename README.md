@@ -346,7 +346,7 @@ As Aspera offers faster download speeds, you can use the `-a` parameter to instr
 > **Note 1**: When accessing the **GSA** database, if download links from **Huawei Cloud** are available, **iSeq** will prioritize downloading through Huawei Cloud, even if the `-a` parameter is used. This is because Huawei Cloud offers faster and more stable download speeds. Therefore, when downloading GSA data, it's **recommended to use the `-a` paramete**r. This way, if access to Huawei Cloud is unavailable, downloading through the Aspera channel is still relatively fast. Otherwise, you'll have to resort to downloading via `wget` or `axel`, which are slower methods.
 
 > [!NOTE]
-> **Note 2**: Since `Asper`a requires a key file, **iSeq** will **automatically search for the key** file in the `conda` environment or the `~/.aspera` directory. If the key file is not found, downloading will not be possible.
+> **Note 2**: Since `Aspera` requires a key file, **iSeq** will **automatically search for the key** file in the `conda` environment or the `~/.aspera` directory. If the key file is not found, downloading will not be possible.
 
 ### 10. `-o`, `--output`
 
