@@ -821,7 +821,7 @@ function mergeSRArun(){
     if [[ $merge == "ex" ]]; then
         local experimentList=$(grep -oe "[EDS]RX[0-9]\+" $metadata | sort | uniq)
     elif [[ $merge == "sa" ]]; then
-        local experimentList=$(grep -oe "SAM[EDN][A-Z]?[0-9]\+" $metadata | sort | uniq)
+        local experimentList=$(grep -oe "SAM[EDN][A-Z]*[0-9]\+" $metadata | sort | uniq)
     elif [[ $merge == "st" ]]; then
         local experimentList=$(grep -oe "PRJ[EDN][A-Z][0-9]\+" $metadata | sort | uniq)
     fi
