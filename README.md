@@ -30,6 +30,11 @@
 
 ## Update Notes:
 
+### 2026.08.04
+- Fixed an issue ([#68](https://github.com/BioOmics/iSeq/issues/68)) where iSeq failed to download FASTQ files when a run accession contained more than two file links. The download process has been updated to support multiple FASTQ links for a single run.
+
+- Fixed an issue ([#67](https://github.com/BioOmics/iSeq/issues/67)) where SRA metadata retrieval resulted in incomplete and duplicated records. The metadata fetching process has been updated by replacing the `sra-db-be` API with the NCBI E-utilities `efetch` API to improve metadata completeness and reliability.
+
 ### 2025.11.20
 - **⚠️Update Notice**: Due to recent changes in the **GSA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest GSA API. **Everyone please update iSeq version (≥ 1.9.8)**
 
@@ -245,7 +250,7 @@ iseq -i CRR343031 -m
 Therefore, regardless of whether the `-m` parameter is used or not, the sample information of the accession will be obtained. If metadata cannot be retrieved, the **iSeq** program will exit without proceeding to the subsequent download.
 
 > [!NOTE]
-> **Note 1**: If the retrieved accession is in the **SRA/ENA/DDBJ/GEO** databases, **iSeq** will first search in the ENA database. If sample information can be retrieved, it will download metadata in **`TSV` format** via the [ENA API](https://www.ebi.ac.uk/ena/portal/api/swagger-ui/index.html), typically containing 191 columns. However, some recently released data in the SRA database may not be promptly synchronized to the ENA database. Therefore, if metadata cannot be obtained from the ENA database, **iSeq** will directly download metadata in **`CSV` format** via the [SRA Database Backend](https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/), typically containing 30 columns. To maintain consistency with the TSV format, it will be converted to TSV format using `sed -i 's/,/\t/g'`. However, if a single field contains a comma, it may cause column disorder. Ultimately, you will obtain sample information named **`${accession}.metadata.tsv`**.
+> **Note 1**: If the retrieved accession is in the **SRA/ENA/DDBJ/GEO** databases, **iSeq** will first search in the ENA database. If sample information can be retrieved, it will download metadata in **`TSV` format** via the [ENA API](https://www.ebi.ac.uk/ena/portal/api/swagger-ui/index.html), typically containing 191 columns. However, some recently released data in the SRA database may not yet be synchronized to the ENA database. In such cases, **iSeq** will retrieve metadata directly from the SRA database using the [NCBI EFetch API](https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi) in **`CSV` format**, typically containing 30 columns. To maintain consistency with the TSV format, it will be converted to TSV format using `sed -i 's/,/\t/g'`. However, if a single field contains a comma, it may cause column disorder. Ultimately, you will obtain sample information named **`${accession}.metadata.tsv`**.
 
 > [!NOTE]
 > **Note 2**: If the retrieved accession is in the **GSA** database, **iSeq** will obtain sample information via GSA's [getRunInfo](https://ngdc.cncb.ac.cn/gsa/search/getRunInfo) interface, downloading metadata in **`CSV` format**, typically containing 25 columns. The metadata obtained above will be saved as `${accession}.metadata.csv`. To supplement more detailed metadata information, iSeq will automatically obtain metadata information for the Project to which the accession belongs via GSA's [exportExcelFile](https://ngdc.cncb.ac.cn/gsa/file/exportExcelFile) interface, downloading metadata in **`XLSX`** format, typically with 3 sheets: `Sample`, `Experiment`, `Run`. The final metadata information will be saved as `${accession}.metadata.xlsx`. In summary, you will ultimately obtain sample information named **`${accession}.metadata.csv`** and **`CRA*.metadata.xlsx`**.
