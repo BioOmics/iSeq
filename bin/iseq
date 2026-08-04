@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2025-11-20
+# Last modified: 2026-08-04
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -106,7 +106,7 @@ while [[ $# -gt 0 ]]; do
     -Q|--quiet) quiet=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.9.8"; exit 0 ;;
+    -v|--version) echo "Version 1.9.9"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -448,7 +448,8 @@ function getSRAMetadata() {
         WebEnv=$(grep -oP '<WebEnv>\K[^<]+' $accession.xml)
         QueryKey=$(grep -oP '<QueryKey>\K[^<]+' $accession.xml)
         rm -f $accession.xml
-        wget --quiet --output-document="$accession.metadata.tsv" "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/sra-db-be.cgi?rettype=runinfo&WebEnv=${WebEnv}&query_key=${QueryKey}"
+        wget --quiet --output-document="$accession.metadata.tsv" "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=sra&rettype=runinfo&retmode=text&WebEnv=${WebEnv}&query_key=${QueryKey}"
+        # wget --quiet --output-document="$accession.metadata.tsv" "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/sra-db-be.cgi?rettype=runinfo&WebEnv=${WebEnv}&query_key=${QueryKey}"
         sed -i "s/,/\t/g" $accession.metadata.tsv
 
         if [[ -z $(awk -vFS="\t" 'NR==2 {print $1}' $accession.metadata.tsv) ]]; then
@@ -468,7 +469,8 @@ function downloadSRA() {
     if [[ $gzip -eq 1 && ! -z $FASTQLink && ! $database =~ ^[sS][rR][aA]$ && $fastq -eq 0 ]]; then 
         echo -e "\033[32mNote\033[0m: -g used, download FASTQ files in gzip format directly"
         local layout=$(grep "$SRR" $accession.metadata.tsv | awk '{if($0~"PAIRED"){print "paired"}else{print "single"}}' | uniq)
-        local linkNum=$(echo $FASTQLink | tr ";" "\n" | wc -l) # even single-end data may have multiple links, such as SRR18030918
+        local links=$(echo "$FASTQLink" | tr ";" "\n" | grep "fastq.gz")
+        local linkNum=$(echo "$links" | wc -l) # even single-end data may have multiple links, such as SRR18030918
         if [[ $layout == "single" && $linkNum -eq 1 ]]; then
             local link=$(echo $FASTQLink | tr ";" "\n" | grep "fastq.gz")
             if [[ $aspera -eq 1 ]]; then
@@ -488,27 +490,24 @@ function downloadSRA() {
                 echo -e "\033[93mNote\033[0m: $SRR is single-end data, but has multiple links"
             fi
 
-            if [[ $linkNum -eq 2 ]]; then
-                local link1=$(echo $FASTQLink | tr ";" "\n" | grep "_1.fastq.gz")
-                local link2=$(echo $FASTQLink | tr ";" "\n" | grep "_2.fastq.gz")
-                if [[ $aspera -eq 1 ]]; then
-                    echo -e "File size: $(wget --spider "ftp://$link1" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
-                    executeAspera "$link1" "ENA"
-                    echo -e "File size: $(wget --spider "ftp://$link2" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
-                    executeAspera "$link2" "ENA"
-                else
-                    if [[ $protocol == "https" ]]; then
-                        echo -e "File size: $(wget --spider "https://$link1" 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: ENA\tMode: https"
-                        executeDownload "https://$link1" $(basename $link1)
-                        echo -e "File size: $(wget --spider "https://$link2" 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: ENA\tMode: https"
-                        executeDownload "https://$link2" $(basename $link2)
+            if [[ $linkNum -ge 2 ]]; then # paired-end data may have multiple links, such as ERR3493824
+                while read -r link; do
+                    [[ -z "$link" ]] && continue
+
+                    if [[ $aspera -eq 1 ]]; then
+                        echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
+                        executeAspera "$link" "ENA"
                     else
-                        echo -e "File size: $(wget --spider "ftp://$link1" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
-                        executeDownload "ftp://$link1" $(basename $link1)
-                        echo -e "File size: $(wget --spider "ftp://$link2" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
-                        executeDownload "ftp://$link2" $(basename $link2)
+                        if [[ $protocol == "https" ]]; then
+                            echo -e "File size: $(wget --spider "https://$link" 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: ENA\tMode: https"
+                            executeDownload "https://$link" "$(basename "$link")"
+                        else
+                            echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: ftp"
+                            executeDownload "ftp://$link" "$(basename "$link")"
+                        fi
                     fi
-                fi
+
+                done <<< "$links"
             else
                 echo -e "\033[93mNote\033[0m: $SRR is paired-end data, but has only one link" # such as SRR23680070
                 local link=$(echo $FASTQLink | tr ";" "\n" | grep ".fastq.gz")
