@@ -30,6 +30,12 @@
 
 ## Update Notes:
 
+### 2026.10.13 (v2.0.0)
+- **Fix GSA download failure due to browser security challenge / empty download path**:
+  - GSA added a browser security verification challenge to `https://ngdc.cncb.ac.cn/gsa/browse/...` pages, blocking HTML link scraping.
+  - Implemented dynamic bucket detection (`getGSABucket`) across GSA storage pools (`gsa5`, `gsa4`, etc.) and automated link reconstruction from metadata.
+  - Added fallback mechanisms for GSA Aspera/FTP downloads and fixed `md5sum.txt` fetching when `Download_path` is empty in metadata.
+
 ### 2026.08.04
 - Fixed an issue ([#68](https://github.com/BioOmics/iSeq/issues/68)) where iSeq failed to download FASTQ files when a run accession contained more than two file links. The download process has been updated to support multiple FASTQ links for a single run.
 

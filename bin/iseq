@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: BioOmics (https://github.com/BioOmics)
-# Last modified: 2026-08-04
+# Last modified: 2026-10-13
 # =======================================
 function CheckSoftware(){
     local software1=$1
@@ -106,7 +106,7 @@ while [[ $# -gt 0 ]]; do
     -Q|--quiet) quiet=1 ; shift 1 ;;
     -o|--output) checkParameter $1 $2; if [[ $? -eq 0 ]]; then output=$2;shift 2; fi ;;
     -h|--help) usage; exit 0 ;;
-    -v|--version) echo "Version 1.9.9"; exit 0 ;;
+    -v|--version) echo "Version 2.0.0"; exit 0 ;;
     *) echo -e "\033[1;31mError\033[0m: Invalid option: $1"; echo -e "\033[1;32mHow to solve?\033[0m Please remove $1 option"; exit 1 ;;
   esac
 done
@@ -715,13 +715,56 @@ function getGSAMetadata() {
     fi
 }
 
+function getGSABucket() {
+    local CRA=$1
+    local bucket=$(grep -oe "gsa[0-9]\+/${CRA}\|gsa/${CRA}" "${accession}.metadata.csv" 2>/dev/null | head -1 | cut -d'/' -f1)
+    if [[ -n "$bucket" ]]; then
+        echo "$bucket"
+        return 0
+    fi
+    for b in gsa5 gsa4 gsa3 gsa2 gsa1 gsa6 gsa; do
+        if wget --spider --quiet "https://download.cncb.ac.cn/${b}/${CRA}/md5sum.txt" 2>/dev/null; then
+            echo "$b"
+            return 0
+        fi
+    done
+    echo "gsa"
+}
+
 function downloadGSA() {
     local CRR=$1 # only CRR_ID
-    local CRA=$(grep "$CRR" ${accession}.metadata.csv | grep -o "CRA[0-9]\+" | uniq)
-    local allLinks=$(wget -qO- --user-agent="Mozilla/5.0" https://ngdc.cncb.ac.cn/gsa/browse/${CRA}/${CRR} | grep -oE '(https|ftp)://[^"]*\.(gz|bam|tar|bz2)' | sort | uniq)
-    local httpsLink=$(echo $allLinks | tr " " "\n" | grep "https://download.cncb.ac.cn")
-    local ftpLink=$(echo $allLinks | tr " " "\n" | grep "ftp://download.big.ac.cn")
-    local HuaWeiLink=$(echo $allLinks | tr " " "\n" | grep "huaweicloud")
+    local CRA=$(grep "$CRR" ${accession}.metadata.csv | grep -o "CRA[0-9]\+" | head -1)
+
+    # 1. First check if metadata.csv has download paths
+    local metaLinks=$(awk -F, -v crr="$CRR" 'NR>1 && $1==crr {print $7}' "${accession}.metadata.csv" | tr "|" "\n" | grep -E '^ftp|^http')
+
+    # 2. If empty, construct links by probing GSA bucket
+    if [[ -z "$metaLinks" ]]; then
+        local bucket=$(getGSABucket "$CRA")
+        local fileList=$(awk -F, -v crr="$CRR" 'NR>1 && $1==crr {print $5}' "${accession}.metadata.csv" | tr "|" "\n")
+        local generatedLinks=""
+        for fname in $fileList; do
+            [[ -z "$fname" ]] && continue
+            generatedLinks="${generatedLinks} ftp://download.big.ac.cn/${bucket}/${CRA}/${CRR}/${fname}"
+        done
+        metaLinks=$(echo "$generatedLinks" | tr " " "\n" | grep -E '^ftp|^http')
+    fi
+
+    # 3. Fallback to scraping webpage if still empty
+    if [[ -z "$metaLinks" ]]; then
+        local allLinks=$(wget -qO- --user-agent="Mozilla/5.0" https://ngdc.cncb.ac.cn/gsa/browse/${CRA}/${CRR} | grep -oE '(https|ftp)://[^"]*\.(gz|bam|tar|bz2)' | sort | uniq)
+        metaLinks="$allLinks"
+    fi
+
+    local ftpLink=$(echo "$metaLinks" | grep "ftp://download.big.ac.cn")
+    local HuaWeiLink=$(echo "$metaLinks" | grep "huaweicloud")
+
+    if [[ -z "$metaLinks" ]]; then
+        echo -e "\033[91mError: No download link could be obtained for ${CRR}\033[0m"
+        echo -e "$(date)\t${CRR}" >> fail.log
+        touch "$tmp_fail_flag"
+        return 1
+    fi
 
     if [[ ! -z $HuaWeiLink ]]; then # use HuaWei Cloud to download firstly, even if aspera is available
         if [[ $aspera -eq 1 ]]; then 
@@ -729,7 +772,7 @@ function downloadGSA() {
         fi
         for link in $HuaWeiLink; do
             local SaveName=$(basename $link)
-            if [[ $(grep -c $SaveName success.log) -ge "1" ]]; then
+            if [[ $(grep -c $SaveName success.log 2>/dev/null) -ge "1" ]]; then
                 echo -e "\033[32mNote\033[0m: ${SaveName} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$$SaveName/d' success.log)"
             else 
                 echo -e "File size: $(wget --user-agent="Mozilla/5.0" --spider $link 2>&1 | grep Length | awk '{printf "%.2fG", ($2/1024/1024/1024)}')\tDatabase: GSA\tMode: HUAWEI Cloud"
@@ -744,7 +787,7 @@ function downloadGSA() {
     elif [[ $aspera -eq 1 ]]; then
         for link in $ftpLink; do
             local SaveName=$(basename $link)
-            if [[ $(grep -c $SaveName success.log) -ge "1" ]]; then
+            if [[ $(grep -c $SaveName success.log 2>/dev/null) -ge "1" ]]; then
                 echo -e "\033[32mNote\033[0m: ${SaveName} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$$SaveName/d' success.log)"
             else
                 echo -e "File size: $(wget --user-agent="Mozilla/5.0" --spider $link 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: GSA\tMode: Aspera"
@@ -759,7 +802,7 @@ function downloadGSA() {
     else
         for link in $ftpLink; do
             local SaveName=$(basename $link)
-            if [[ $(grep -c $SaveName success.log) -ge "1" ]]; then
+            if [[ $(grep -c $SaveName success.log 2>/dev/null) -ge "1" ]]; then
                 echo -e "\033[32mNote\033[0m: ${SaveName} has been downloaded successfully, please check success.log for details. If you want to download it again, please remove it from success.log (sed -i '/$$SaveName/d' success.log)"
             else
                 echo -e "File size: $(wget --user-agent="Mozilla/5.0" --spider $link 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: GSA\tMode: ftp"
@@ -780,7 +823,8 @@ function checkGSA() {
     local CRR=$2
 
     if [[ ! -f $CRA.md5sum.txt ]]; then
-        md5URL=$(echo "https://download.cncb.ac.cn/"$(grep -oe "gsa[0-9]\+/$CRA\|gsa/$CRA" ${accession}.metadata.csv | uniq)"/md5sum.txt")
+        local bucket=$(getGSABucket "$CRA")
+        md5URL="https://download.cncb.ac.cn/${bucket}/${CRA}/md5sum.txt"
         wget --user-agent="Mozilla/5.0" "$md5URL" -O $CRA.md5sum.txt --quiet
     fi
 
