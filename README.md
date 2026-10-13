@@ -8,17 +8,6 @@
 # [iSeq](https://github.com/BioOmics/iSeq): An [i](https://github.com/BioOmics/iSeq)ntegrated tool to fetch public [Seq](https://github.com/BioOmics/iSeq)uencing data
 **Cite us**: Haoyu Chao, Zhuojin Li, Dijun Chen, Ming Chen, iSeq: An integrated tool to fetch public sequencing data, ***Bioinformatics***, 2024, btae641, https://doi.org/10.1093/bioinformatics/btae641
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
 ## Description
 
 **iSeq** is a Bash script that allows you to download sequencing data and metadata from **[GSA](https://ngdc.cncb.ac.cn/gsa/)**, **[SRA](https://www.ncbi.nlm.nih.gov/sra/)**, **[ENA](https://www.ebi.ac.uk/ena/)**, and **[DDBJ](https://www.ddbj.nig.ac.jp/)** databases. See [Detail Pipeline](https://github.com/BioOmics/iSeq/blob/main/docs/img/iSeq-Pipeline-Detail.png) for iSeq. Here is the basic pipeline of iSeq: 
@@ -31,21 +20,19 @@
 ## Update Notes:
 
 ### 2026.10.13 (v2.0.0)
-- **Fix GSA download failure due to browser security challenge / empty download path**:
-  - GSA added a browser security verification challenge to `https://ngdc.cncb.ac.cn/gsa/browse/...` pages, blocking HTML link scraping.
-  - Implemented dynamic bucket detection (`getGSABucket`) across GSA storage pools (`gsa5`, `gsa4`, etc.) and automated link reconstruction from metadata.
-  - Added fallback mechanisms for GSA Aspera/FTP downloads and fixed `md5sum.txt` fetching when `Download_path` is empty in metadata.
+- **⚠️Update Notice**: Fix an issue (https://github.com/BioOmics/iSeq/issues/69) GSA download failure due to browser security challenge: Implemented dynamic bucket detection (`getGSABucket`) across GSA storage pools (`gsa5`, `gsa4`, etc.) and automated link reconstruction from metadata. Added fallback mechanisms for GSA Aspera/FTP downloads and fixed `md5sum.txt` fetching when `Download_path` is empty in metadata. **Everyone please update iSeq version (≥ 2.0.0)**
 
 ### 2026.08.04
 - Fixed an issue ([#68](https://github.com/BioOmics/iSeq/issues/68)) where iSeq failed to download FASTQ files when a run accession contained more than two file links. The download process has been updated to support multiple FASTQ links for a single run.
+
+<details>
+<summary>More Updates</summary>
 
 - Fixed an issue ([#67](https://github.com/BioOmics/iSeq/issues/67)) where SRA metadata retrieval resulted in incomplete and duplicated records. The metadata fetching process has been updated by replacing the `sra-db-be` API with the NCBI E-utilities `efetch` API to improve metadata completeness and reliability.
 
 ### 2025.11.20
 - **⚠️Update Notice**: Due to recent changes in the **GSA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest GSA API. **Everyone please update iSeq version (≥ 1.9.8)**
 
-<details>
-<summary>More Updates</summary>
 
 ### 2025.10.21
 - **New `-Q`, `--quiet` option**: Added this option to suppress download progress bars. Useful when logging clean outputs.
