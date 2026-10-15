@@ -43,7 +43,8 @@
 - Fixed a bug when checking md5 of SRA files.
 
 ### 2025.09.04
-- **⚠️Update Notice**: Due to recent changes in the **ENA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest ENA API. **Everyone please update iSeq version (≥ 1.9.5)**
+- **⚠️Update Notice**: Due to recent changes in the **ENA API**, we have updated the way iseq retrieves metadata. The metadata fetching process has been modified accordingly to ensure compatibility with the latest ENA API.
+- **Everyone please update iSeq version (≥ 1.9.5)**
 
 ### 2025.07.22
 - **New `-r`, `--protocol` option** to specify the protocol only when downloading files from ENA.
