@@ -463,6 +463,7 @@ function getSRAMetadata() {
 
 function downloadSRA() {
     local SRR=$1 # only SRR_ID
+    local valid_file
     local SRALink=$(grep "$SRR" $accession.metadata.tsv | tr "\t" "\n" | grep -e "ftp.sra.ebi.ac.uk/vol[0-9]/[sde]rr" | grep -v "lite" | uniq)
     local FASTQLink=$(grep "$SRR" $accession.metadata.tsv | tr "\t" "\n" | grep -e "ftp.sra.ebi.ac.uk/vol[0-9]/fastq" | uniq)
 
@@ -493,6 +494,10 @@ function downloadSRA() {
             if [[ $linkNum -ge 2 ]]; then # paired-end data may have multiple links, such as ERR3493824
                 while read -r link; do
                     [[ -z "$link" ]] && continue
+
+                    for valid_file in "${valid_fastq_files[@]}"; do
+                        [[ $(basename "$link") == "$valid_file" ]] && continue 2
+                    done
 
                     if [[ $aspera -eq 1 ]]; then
                         echo -e "File size: $(wget --spider "ftp://$link" 2>&1 | grep SIZE | awk '{printf "%.2fG", ($5/1024/1024/1024)}')\tDatabase: ENA\tMode: Aspera"
@@ -571,6 +576,8 @@ function checkSRA() {
     local SRR=$1 # only SRR_ID
     if [[ $gzip -eq 1 && $fastq -eq 0 && ! $database =~ ^[sS][rR][aA]$ ]]; then
 
+        local -a fastq_files valid_fastq_files failed_fastq_files
+        local file md5 all_pass
         mapfile -t fastq_files < <(grep "$SRR" "${accession}.metadata.tsv" | grep -o "${SRR}\(_[^;/[:space:]]*\)\?\.fastq\.gz")
 
         if [[ ${#fastq_files[@]} -gt 0 ]]; then
@@ -578,14 +585,16 @@ function checkSRA() {
             for file in "${fastq_files[@]}"; do
                 if [[ ! -f $file ]]; then
                     all_pass=false
-                    break
+                    continue
                 fi
 
                 md5=$(md5sum "$file" | awk '{print $1}')
                 if ! grep -q "$md5" "${accession}.metadata.tsv"; then
                     echo -e "\033[91mMD5 mismatch for:\033[0m $file"
                     all_pass=false
-                    break
+                    failed_fastq_files+=("$file")
+                else
+                    valid_fastq_files+=("$file")
                 fi
             done
 
@@ -599,15 +608,13 @@ function checkSRA() {
                 count=$((count+1))
                 checkSRA "$SRR"
             elif [[ $count -le 2 ]]; then
-                echo -e "\033[93mNote\033[0m: ${SRR} validate failed, remove the files and retry ${count} times"
-                rm -f "${fastq_files[@]}"
+                echo -e "\033[93mNote\033[0m: ${SRR} validate failed, remove the invalid files and retry ${count} times"
+                rm -f "${failed_fastq_files[@]}"
                 downloadSRA "$SRR"
                 count=$((count+1))
                 checkSRA "$SRR"
             else
-				for f in "${fastq_files[@]}"; do
-					[[ -f "$f" ]] && rm -f "$f"
-				done
+                rm -f "${failed_fastq_files[@]}"
                 echo -e "\033[91m${SRR} md5 check failed after trying ${count} times, save Run ID in fail.log\033[0m"
                 echo -e "$(date)\t$SRR" >> fail.log
                 #exit 1
